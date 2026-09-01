@@ -67,7 +67,7 @@ async function callGroq(opts: StructuredCallOptions): Promise<unknown> {
   }
 
   const body = {
-    model: process.env.GROQ_MODEL ?? "llama-3.3-70b-versatile",
+    model: process.env.GROQ_MODEL ?? "openai/gpt-oss-120b",
     messages: [
       { role: "system", content: opts.systemPrompt },
       { role: "user", content: opts.userPrompt },
@@ -76,7 +76,13 @@ async function callGroq(opts: StructuredCallOptions): Promise<unknown> {
       type: "json_schema",
       json_schema: {
         name: opts.schemaName,
-        strict: true,
+        // strict:true requires additionalProperties:false on every object in
+        // the schema (Groq/OpenAI-style constrained decoding). We deliberately
+        // use best-effort mode instead and rely on AIDecompositionSchema.safeParse()
+        // in service.ts as the real enforcement layer — this keeps one shared
+        // jsonSchema object usable by both Groq and Gemini without provider-specific
+        // fields, and still fails safely (AI_SCHEMA_MISMATCH) if the model drifts.
+        strict: false,
         schema: opts.jsonSchema,
       },
     },
@@ -130,7 +136,7 @@ async function callGemini(opts: StructuredCallOptions): Promise<unknown> {
     throw new ProviderError("gemini", "GEMINI_API_KEY is not configured");
   }
 
-  const model = process.env.GEMINI_MODEL ?? "gemini-2.0-flash";
+  const model = process.env.GEMINI_MODEL ?? "gemini-3.6-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
   const body = {
