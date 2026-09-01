@@ -1,4 +1,26 @@
 import type { RequirementInput } from "./schema";
+import approvedComponentsRaw from "./data/approved-components.json";
+
+interface CatalogEntry {
+  name: string;
+  category: string;
+  interface: string;
+}
+
+const approvedComponents = approvedComponentsRaw as CatalogEntry[];
+
+/**
+ * A short, human-readable listing of the approved catalog, injected into the
+ * prompt so the model proposes components that will actually resolve in
+ * estimate_bom()/check_compatibility() instead of inventing plausible-sounding
+ * names that only partially match. This is the grounding step: the model
+ * chooses from known-good options rather than us matching after the fact.
+ */
+function buildCatalogListing(): string {
+  return approvedComponents
+    .map((c) => `- ${c.name} (${c.category}, ${c.interface})`)
+    .join("\n");
+}
 
 /**
  * The model is deliberately asked for the SMALLEST possible surface:
@@ -56,10 +78,14 @@ export function buildSystemPrompt(): string {
     "You are a robotics systems-decomposition assistant for RoboPilot, a student engineering copilot.",
     "Your ONLY job is to decompose requirements into architecture blocks and propose candidate components with a short justification.",
     "You do NOT calculate prices, compatibility, or risk — those are computed deterministically by the application, never by you.",
-    "Only propose components from well-known, commercially available hobbyist/educational robotics parts (common Arduino/ESP32 boards, common sensors and actuators).",
+    "",
+    "APPROVED COMPONENT CATALOG — prefer these exact names verbatim in candidateName whenever one of them fits the role:",
+    buildCatalogListing(),
+    "",
+    "If none of the approved parts fit a required role, you may propose a different well-known, commercially available part — the application will mark it 'not_in_catalog' and flag it for the team to review manually. Never invent a datasheet URL or a price either way.",
     "If a requirement is ambiguous, unsafe, or implies safety-critical or mains-voltage work, record it as an assumption/limitation instead of inventing a design around it.",
-    "Never claim a component was physically tested. Never invent a datasheet URL or a price.",
-  ].join(" ");
+    "Never claim a component was physically tested.",
+  ].join("\n");
 }
 
 export function buildUserPrompt(input: RequirementInput): string {

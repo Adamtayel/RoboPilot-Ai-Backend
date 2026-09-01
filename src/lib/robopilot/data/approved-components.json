@@ -1,5 +1,15 @@
 [
   {
+    "name": "Arduino Nano",
+    "aliases": ["Nano", "Arduino Nano V3", "ATmega328P Nano"],
+    "category": "microcontroller",
+    "operatingVoltageV": [5, 5],
+    "logicLevelV": [5],
+    "interface": "GPIO",
+    "unitPriceUsd": 25.0,
+    "datasheetUrl": "https://docs.arduino.cc/hardware/nano/"
+  },
+  {
     "name": "Arduino Uno R3",
     "aliases": ["Arduino Uno", "Uno R3", "ATmega328P Uno"],
     "category": "microcontroller",

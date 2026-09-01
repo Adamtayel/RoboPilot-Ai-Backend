@@ -20,11 +20,30 @@ export interface ApprovedComponent {
 
 const approvedComponents = approvedComponentsRaw as ApprovedComponent[];
 
+/**
+ * Resolves a proposed component name against the approved catalog.
+ *
+ * 1. Exact match (case-insensitive) on the canonical name or a known alias.
+ * 2. Fallback: substring match either direction against the canonical name
+ *    or an alias. This deliberately stays permissive only in one narrow way —
+ *    the catalog's own name/alias must appear verbatim inside the proposed
+ *    name (or vice versa) — so "DHT22 (AM2302) temperature/humidity sensor"
+ *    still resolves to our "DHT22" entry, but an unrelated part won't
+ *    accidentally match. A 3-character floor avoids trivial substrings.
+ */
 export function findApprovedComponent(name: string): ApprovedComponent | undefined {
   const needle = name.trim().toLowerCase();
-  return approvedComponents.find(
+  if (!needle) return undefined;
+
+  const exact = approvedComponents.find(
     (c) => c.name.toLowerCase() === needle || c.aliases.some((a) => a.toLowerCase() === needle)
   );
+  if (exact) return exact;
+
+  return approvedComponents.find((c) => {
+    const known = [c.name.toLowerCase(), ...c.aliases.map((a) => a.toLowerCase())];
+    return known.some((k) => k.length >= 3 && (needle.includes(k) || k.includes(needle)));
+  });
 }
 
 function round2(n: number): number {
@@ -155,6 +174,7 @@ export interface MilestoneInput {
 
 export interface RiskAssessmentContext {
   unresolvedComponentCount: number;
+  totalComponentCount: number;
   incompatiblePairCount: number;
   totalEstimatedDays: number;
   budgetUsd?: number;
@@ -244,20 +264,52 @@ export function project_risk(milestones: MilestoneInput[], ctx: RiskAssessmentCo
   }
 
   if (ctx.budgetUsd !== undefined) {
-    const overBudget = ctx.bomTotalUsd > ctx.budgetUsd;
-    const ratio = ctx.bomTotalUsd / ctx.budgetUsd;
-    const likelihood: Level = !overBudget ? "low" : ratio > 1.25 ? "high" : "medium";
-    const impact: Level = overBudget ? "high" : "low";
-    risks.push({
-      category: "budget",
-      description: `Estimated BOM total is $${ctx.bomTotalUsd.toFixed(2)} against a stated budget of $${ctx.budgetUsd.toFixed(2)}.`,
-      likelihood,
-      impact,
-      score: riskScore(likelihood, impact),
-      mitigation: overBudget
-        ? "Substitute lower-cost approved alternatives or reduce component quantities."
-        : "No action needed; monitor for scope creep.",
-    });
+    const allUnresolved =
+      ctx.totalComponentCount > 0 && ctx.unresolvedComponentCount === ctx.totalComponentCount;
+    const someUnresolved = ctx.unresolvedComponentCount > 0 && !allUnresolved;
+
+    if (allUnresolved) {
+      // We have literally no priced components — a BOM total of $0 here means
+      // "unknown", not "cheap". Reporting this as low risk would be exactly
+      // the kind of false confidence this project is designed to avoid.
+      risks.push({
+        category: "budget",
+        description: `Budget cannot be assessed: 0 of ${ctx.totalComponentCount} proposed component(s) have a verified price against a stated budget of $${ctx.budgetUsd.toFixed(2)}.`,
+        likelihood: "medium",
+        impact: "medium",
+        score: riskScore("medium", "medium"),
+        mitigation:
+          "Resolve component names against the approved catalog, or manually price the unresolved parts, before treating this project as within budget.",
+      });
+    } else {
+      const overBudget = ctx.bomTotalUsd > ctx.budgetUsd;
+      const ratio = ctx.bomTotalUsd / ctx.budgetUsd;
+      // With unresolved parts still in the mix, an under-budget reading isn't
+      // fully trustworthy — the real total can only go up once they're priced.
+      const likelihood: Level = overBudget
+        ? ratio > 1.25
+          ? "high"
+          : "medium"
+        : someUnresolved
+          ? "medium"
+          : "low";
+      const impact: Level = overBudget ? "high" : someUnresolved ? "medium" : "low";
+      const caveat = someUnresolved
+        ? ` (${ctx.unresolvedComponentCount} of ${ctx.totalComponentCount} component(s) are unpriced and not included in this total, so the real cost may be higher)`
+        : "";
+      risks.push({
+        category: "budget",
+        description: `Estimated BOM total is $${ctx.bomTotalUsd.toFixed(2)} against a stated budget of $${ctx.budgetUsd.toFixed(2)}${caveat}.`,
+        likelihood,
+        impact,
+        score: riskScore(likelihood, impact),
+        mitigation: overBudget
+          ? "Substitute lower-cost approved alternatives or reduce component quantities."
+          : someUnresolved
+            ? "Resolve the remaining unpriced components before confirming this project is within budget."
+            : "No action needed; monitor for scope creep.",
+      });
+    }
   }
 
   return risks.sort((a, b) => b.score - a.score);

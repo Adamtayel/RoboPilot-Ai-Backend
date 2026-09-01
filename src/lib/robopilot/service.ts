@@ -188,6 +188,7 @@ export async function generatePlan(input: RequirementInput): Promise<RoboPilotPl
 
   const risks = project_risk(milestones, {
     unresolvedComponentCount: bom.unresolvedCount,
+    totalComponentCount: selections.length,
     incompatiblePairCount: incompatibleCount,
     totalEstimatedDays,
     budgetUsd: input.budgetUsd,
