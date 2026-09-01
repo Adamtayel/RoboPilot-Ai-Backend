@@ -269,9 +269,6 @@ export function project_risk(milestones: MilestoneInput[], ctx: RiskAssessmentCo
     const someUnresolved = ctx.unresolvedComponentCount > 0 && !allUnresolved;
 
     if (allUnresolved) {
-      // We have literally no priced components — a BOM total of $0 here means
-      // "unknown", not "cheap". Reporting this as low risk would be exactly
-      // the kind of false confidence this project is designed to avoid.
       risks.push({
         category: "budget",
         description: `Budget cannot be assessed: 0 of ${ctx.totalComponentCount} proposed component(s) have a verified price against a stated budget of $${ctx.budgetUsd.toFixed(2)}.`,
@@ -284,8 +281,6 @@ export function project_risk(milestones: MilestoneInput[], ctx: RiskAssessmentCo
     } else {
       const overBudget = ctx.bomTotalUsd > ctx.budgetUsd;
       const ratio = ctx.bomTotalUsd / ctx.budgetUsd;
-      // With unresolved parts still in the mix, an under-budget reading isn't
-      // fully trustworthy — the real total can only go up once they're priced.
       const likelihood: Level = overBudget
         ? ratio > 1.25
           ? "high"
