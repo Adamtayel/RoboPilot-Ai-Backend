@@ -11,10 +11,10 @@ Team 05 · AI in Applications program (supervised by Dr. Ahmed Métwalli)
 
 | Module | Owner | Status |
 |---|---|---|
-| AI & Backend (API, schemas, providers, deterministic tools) | Adam | ✅ Done — see `docs/ai-backend-module.md` |
-| Integration / Architecture / Deployment | Adam | 🟡 In progress — architecture docs done, deployment pending |
-| Product UI & Workflow | Adam | ✅ Done — intake form + results view, see §"Product UI" below |
-| Knowledge, Tools & Quality | Adam | ⬜ Not started |
+| AI & Backend (API, schemas, providers, deterministic tools) | Adam Tayel | ✅ Done — see `docs/ai-backend-module.md` |
+| Integration / Architecture / Deployment | Adam Tayel | 🟡 In progress — architecture docs done, deployment pending |
+| Product UI & Workflow | Youssef Mashhour | ✅ Done — intake form + results view, see §"Product UI" below |
+| Knowledge, Tools & Quality | Mina rimon | ⬜ Not started |
 
 *(Team composition changed after the initial assignment — Adam is currently
 covering all four roles. See `AI_USAGE.md` for how AI assistance was used
