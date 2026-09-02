@@ -188,12 +188,22 @@ async function searchStore(query: string, store: StoreAdapter): Promise<LivePric
   try {
     const url = store.buildSearchUrl(query);
     const res = await fetchWithTimeout(url, FETCH_TIMEOUT_MS);
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.warn(`[live-pricing] ${store.name} HTTP ${res.status} for "${query}"`);
+      return null;
+    }
     const html = await res.text();
     const found = extractBestMatch(html, url, store.currency);
-    if (!found) return null;
+    if (!found) {
+      console.warn(`[live-pricing] ${store.name} returned no extractable price for "${query}"`);
+      return null;
+    }
 
     const priceUsd = store.currency === "USD" ? found.price : round2(found.price * (await getEgpToUsdRate()));
+
+    console.warn(
+      `[live-pricing] ${store.name} matched "${query}" -> "${found.name}" @ ${found.price} ${store.currency} ($${priceUsd})`
+    );
 
     return {
       productName: found.name,
@@ -203,7 +213,9 @@ async function searchStore(query: string, store: StoreAdapter): Promise<LivePric
       storeName: store.name,
       listingUrl: found.url,
     };
-  } catch {
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.warn(`[live-pricing] ${store.name} request failed for "${query}": ${message}`);
     return null;
   }
 }
