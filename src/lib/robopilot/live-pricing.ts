@@ -25,6 +25,8 @@
  *   of date over time and should be refreshed periodically.
  */
 
+import { extractWithDeepSeek } from "./deepseek-extractor";
+
 export type PriceRegion = "egypt" | "international";
 
 export interface LivePriceResult {
@@ -193,16 +195,25 @@ async function searchStore(query: string, store: StoreAdapter): Promise<LivePric
       return null;
     }
     const html = await res.text();
-    const found = extractBestMatch(html, url, store.currency);
+
+    // Primary: let DeepSeek read the real fetched HTML and extract the
+    // listing (see deepseek-extractor.ts). Falls back to the regex
+    // extractor below if no DEEPSEEK_API_KEY is set or the call fails.
+    const aiResult = await extractWithDeepSeek(html, query, store.currency);
+    const found = aiResult
+      ? { name: aiResult.productName, price: aiResult.price, url: aiResult.url ?? url }
+      : extractBestMatch(html, url, store.currency);
+
     if (!found) {
       console.warn(`[live-pricing] ${store.name} returned no extractable price for "${query}"`);
       return null;
     }
 
     const priceUsd = store.currency === "USD" ? found.price : round2(found.price * (await getEgpToUsdRate()));
+    const listingUrl = found.url.startsWith("http") ? found.url : new URL(found.url, url).toString();
 
     console.warn(
-      `[live-pricing] ${store.name} matched "${query}" -> "${found.name}" @ ${found.price} ${store.currency} ($${priceUsd})`
+      `[live-pricing] ${store.name} matched "${query}" -> "${found.name}" @ ${found.price} ${store.currency} ($${priceUsd}) [${aiResult ? "deepseek" : "regex"}]`
     );
 
     return {
@@ -211,7 +222,7 @@ async function searchStore(query: string, store: StoreAdapter): Promise<LivePric
       currencyLocal: store.currency,
       priceUsd,
       storeName: store.name,
-      listingUrl: found.url,
+      listingUrl,
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
