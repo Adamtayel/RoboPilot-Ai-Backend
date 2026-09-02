@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { extractBestMatch, usdToApproxEgp, EGP_TO_USD_FALLBACK_RATE } from "@/lib/robopilot/live-pricing";
+import {
+  buildCandidateSnippets,
+  extractBestMatch,
+  usdToApproxEgp,
+  EGP_TO_USD_FALLBACK_RATE,
+} from "@/lib/robopilot/live-pricing";
 
 // Fixtures deliberately mirror the real markup shapes seen when the three
 // Egyptian stores and SparkFun were inspected while building this feature —
@@ -92,5 +97,42 @@ describe("usdToApproxEgp", () => {
 
   it("scales linearly with the input price", () => {
     expect(usdToApproxEgp(20)).toBeCloseTo(usdToApproxEgp(10) * 2, 0);
+  });
+});
+
+// --- buildCandidateSnippets: the fix for real testing showing a large nav ---
+// --- menu (hundreds of category links) drowning out the actual product   ---
+// --- listings once HTML was simply truncated at a fixed length.          ---
+describe("buildCandidateSnippets", () => {
+  it("returns an empty string (skip the AI call) when there are no product-like anchors", () => {
+    const html = `<nav>${"<a href='/category/x'>Category</a>".repeat(50)}</nav>`;
+    expect(buildCandidateSnippets(html)).toBe("");
+  });
+
+  it("extracts short windows around product anchors even behind a huge unrelated nav menu", () => {
+    const hugeNav = "<a href='/category/x'>Category</a>".repeat(2000); // far past any fixed-length truncation
+    const html = `<nav>${hugeNav}</nav><div><a href="/product/esp32-devkit">ESP32 DevKit</a> 452.38 EGP</div>`;
+    const snippets = buildCandidateSnippets(html);
+    expect(snippets).not.toBe("");
+    expect(snippets).toContain("ESP32 DevKit");
+    // The whole nav menu must NOT have been forwarded — snippets stay short.
+    expect(snippets.length).toBeLessThan(5000);
+  });
+
+  it("caps the number of candidate snippets instead of forwarding every match", () => {
+    const manyProducts = Array.from(
+      { length: 20 },
+      (_, i) => `<a href="/product/item-${i}">Item ${i}</a> ${i + 1}.00 EGP`
+    ).join(" ");
+    const snippets = buildCandidateSnippets(manyProducts);
+    const separatorCount = (snippets.match(/---/g) ?? []).length;
+    expect(separatorCount).toBeLessThanOrEqual(5); // MAX_CANDIDATE_SNIPPETS - 1 separators
+  });
+
+  it("strips scripts and styles out of each snippet", () => {
+    const html = `<a href="/product/x">X</a><script>trackClick()</script><style>.x{color:red}</style> 10.00 EGP`;
+    const snippets = buildCandidateSnippets(html);
+    expect(snippets).not.toContain("trackClick");
+    expect(snippets).not.toContain("color:red");
   });
 });

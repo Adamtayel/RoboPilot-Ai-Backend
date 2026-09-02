@@ -1,12 +1,16 @@
 /**
- * Reads REAL, already-fetched HTML (from live-pricing.ts's own fetch() call)
- * and asks DeepSeek to extract the matching product's name and price from
- * it. This is fundamentally different from asking an AI to recall a price
- * from its training data: the model only ever sees content that was just
- * pulled over HTTP moments earlier, and is explicitly told not to use any
- * outside knowledge. If DeepSeek is unavailable, the caller falls back to
- * the plain regex extractor in live-pricing.ts — this module never blocks
- * the pipeline.
+ * Reads a handful of SHORT, targeted HTML snippets (built by
+ * buildCandidateSnippets in live-pricing.ts — each centered on a real
+ * product-link anchor found in a page that was just fetched over HTTP) and
+ * asks DeepSeek to pick the one that matches the given component and
+ * extract its name and price. This is fundamentally different from asking
+ * an AI to recall a price from its training data: the model only ever sees
+ * content that was just pulled from the live page moments earlier, and is
+ * explicitly told not to use any outside knowledge. Sending short targeted
+ * snippets instead of a full page keeps token cost low and keeps the model
+ * from getting lost in navigation menus/headers. If DeepSeek is
+ * unavailable, the caller falls back to the plain regex extractor in
+ * live-pricing.ts — this module never blocks the pipeline.
  *
  * Model note: deepseek-chat / deepseek-reasoner were retired 2026-07-24.
  * The current default here is deepseek-v4-flash, with thinking mode
@@ -21,31 +25,23 @@ export interface ExtractedListing {
 }
 
 const DEEPSEEK_TIMEOUT_MS = 8000;
-const MAX_HTML_CHARS = 15_000; // keeps token cost bounded; target listings are near the top of results
-
-function cleanHtml(html: string): string {
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/<style[\s\S]*?<\/style>/gi, "")
-    .replace(/<!--[\s\S]*?-->/g, "")
-    .slice(0, MAX_HTML_CHARS);
-}
 
 function buildSystemPrompt(componentQuery: string, currency: "EGP" | "USD"): string {
   return [
-    "You extract a single product listing from raw HTML of a real e-commerce search-results page.",
-    "That HTML was fetched over HTTP moments ago and is the ONLY source of truth — never use any",
-    "prior/outside knowledge of what this kind of product usually costs, even if you recall it.",
-    `Find the listing that best matches the search term "${componentQuery}".`,
+    "You will receive several short HTML snippets. Each one is centered on a real product link from",
+    "an e-commerce search-results page that was fetched over HTTP moments ago, separated by '---'.",
+    "That HTML is the ONLY source of truth — never use any prior/outside knowledge of what this kind",
+    "of product usually costs, even if you recall it.",
+    `Pick the ONE snippet that best matches the search term "${componentQuery}" and extract its listing.`,
     'Respond with a json object only: {"found": boolean, "productName": string, "price": number, "url": string}.',
     `"price" must be a plain number in ${currency}, with no currency symbol or thousands separators.`,
-    '"url" is the href of that listing\'s link if visible in the HTML, or "" if not found.',
-    'If nothing in the HTML plausibly matches, respond exactly {"found": false}.',
+    '"url" is the href of that listing\'s link if visible in the snippet, or "" if not found.',
+    'If none of the snippets plausibly match, respond exactly {"found": false}.',
   ].join(" ");
 }
 
 export async function extractWithDeepSeek(
-  html: string,
+  candidateSnippets: string,
   componentQuery: string,
   currency: "EGP" | "USD"
 ): Promise<ExtractedListing | null> {
@@ -66,7 +62,7 @@ export async function extractWithDeepSeek(
         model: process.env.DEEPSEEK_MODEL ?? "deepseek-v4-flash",
         messages: [
           { role: "system", content: buildSystemPrompt(componentQuery, currency) },
-          { role: "user", content: cleanHtml(html) },
+          { role: "user", content: candidateSnippets },
         ],
         response_format: { type: "json_object" },
         temperature: 0,
