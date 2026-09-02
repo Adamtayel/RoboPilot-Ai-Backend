@@ -12,6 +12,7 @@ export function BomTable({ lines, totalUsd }: { lines: ComponentLine[]; totalUsd
               <th>Qty</th>
               <th>Unit price</th>
               <th>Total</th>
+              <th>Source</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -30,7 +31,25 @@ export function BomTable({ lines, totalUsd }: { lines: ComponentLine[]; totalUsd
                 </td>
                 <td className="num">{line.quantity}</td>
                 <td className="num">${line.unitPriceUsd.toFixed(2)}</td>
-                <td className="num">${line.totalPriceUsd.toFixed(2)}</td>
+                <td className="num">
+                  ${line.totalPriceUsd.toFixed(2)}
+                  {line.approxLocalPrice !== undefined && (
+                    <div style={{ color: "var(--ink-faint)", fontSize: 11 }}>
+                      ≈ {line.approxLocalPrice.toLocaleString()} {line.approxLocalCurrency}
+                    </div>
+                  )}
+                </td>
+                <td>
+                  {line.priceSource === "live" && line.liveListingUrl ? (
+                    <a href={line.liveListingUrl} target="_blank" rel="noreferrer" className="mono">
+                      {line.liveStoreName ?? "live"}
+                    </a>
+                  ) : (
+                    <span className="mono" style={{ color: "var(--ink-faint)" }}>
+                      catalog
+                    </span>
+                  )}
+                </td>
                 <td>
                   <span
                     className={

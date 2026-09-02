@@ -11,6 +11,7 @@ export const RequirementInputSchema = z.object({
   constraints: z.array(z.string().min(3).max(500)).max(20).default([]),
   budgetUsd: z.number().positive().max(100_000).optional(),
   targetPlatform: z.enum(["arduino", "esp32", "unspecified"]).default("unspecified"),
+  priceRegion: z.enum(["egypt", "international"]).default("egypt"),
 });
 export type RequirementInput = z.infer<typeof RequirementInputSchema>;
 
@@ -63,6 +64,11 @@ export const ComponentLineSchema = z.object({
   totalPriceUsd: z.number().nonnegative(),
   datasheetUrl: z.string(),
   status: z.enum(["approved", "not_in_catalog"]),
+  priceSource: z.enum(["catalog", "live", "unavailable"]).default("catalog"),
+  liveStoreName: z.string().optional(),
+  liveListingUrl: z.string().optional(),
+  approxLocalPrice: z.number().nonnegative().optional(),
+  approxLocalCurrency: z.enum(["EGP"]).optional(),
 });
 export type ComponentLine = z.infer<typeof ComponentLineSchema>;
 
@@ -120,6 +126,7 @@ export const RoboPilotPlanSchema = z.object({
   meta: z.object({
     provider_used: z.enum(["groq", "gemini", "stub"]),
     generated_at: z.string(),
+    priceRegion: z.enum(["egypt", "international"]),
     warnings: z.array(z.string()),
   }),
 });

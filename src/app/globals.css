@@ -287,6 +287,35 @@ button {
   gap: 20px;
 }
 
+.region-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.region-btn {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink-dim);
+  font-size: 13px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.region-btn:hover:not(:disabled) {
+  border-color: var(--copper);
+  color: var(--ink);
+}
+
+.region-btn--active {
+  background: rgba(201, 125, 62, 0.12);
+  border-color: var(--copper);
+  color: var(--copper-bright);
+  font-weight: 600;
+}
+
 @media (max-width: 560px) {
   .grid-2 {
     grid-template-columns: 1fr;

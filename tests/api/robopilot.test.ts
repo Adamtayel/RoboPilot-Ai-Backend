@@ -21,10 +21,12 @@ describe("POST /api/robopilot", () => {
   beforeEach(() => {
     vi.resetModules();
     process.env.ROBOPILOT_STUB_MODE = "true";
+    process.env.ROBOPILOT_LIVE_PRICING = "false";
   });
 
   afterEach(() => {
     delete process.env.ROBOPILOT_STUB_MODE;
+    delete process.env.ROBOPILOT_LIVE_PRICING;
   });
 
   it("returns a valid, schema-conforming plan for a well-formed request", async () => {

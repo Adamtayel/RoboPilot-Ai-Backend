@@ -1,4 +1,5 @@
 import { generateStructured, ProviderError } from "../ai/providers";
+import { fetchLivePrice, usdToApproxEgp, type PriceRegion } from "./live-pricing";
 import { AI_DECOMPOSITION_JSON_SCHEMA, buildSystemPrompt, buildUserPrompt } from "./prompt";
 import {
   AIDecompositionSchema,
@@ -6,6 +7,7 @@ import {
   RoboPilotPlan,
   RoboPilotPlanSchema,
   type Assumption,
+  type ComponentLine,
   type TestPlanItem,
 } from "./schema";
 import {
@@ -30,6 +32,68 @@ export class ServiceError extends Error {
 
 /** Set ROBOPILOT_STUB_MODE=true to skip real provider calls during local dev / CI. */
 const isStubMode = () => process.env.ROBOPILOT_STUB_MODE === "true";
+
+/**
+ * Live pricing does real network calls, so it's off automatically in stub
+ * mode (keeps local dev fast and network-free) and can be force-disabled
+ * with ROBOPILOT_LIVE_PRICING=false (used by the API test suite so tests
+ * stay deterministic and don't depend on third-party sites being up).
+ */
+const isLivePricingEnabled = () => !isStubMode() && process.env.ROBOPILOT_LIVE_PRICING !== "false";
+
+function round2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+/**
+ * Overlays a real current price from the region's storefronts onto each BOM
+ * line, in parallel. This NEVER touches tools.ts/estimate_bom() — that stays
+ * the deterministic, network-free floor. A line that fails live lookup keeps
+ * whatever it already had (catalog price, or `not_in_catalog`/$0). A line
+ * that was `not_in_catalog` can still pick up a real price here even though
+ * its electrical spec remains unverified — priceSource and status are
+ * intentionally separate concepts (see schema.ts).
+ */
+async function enrichBomWithLivePrices(
+  lines: ComponentLine[],
+  region: PriceRegion
+): Promise<{ lines: ComponentLine[]; totalUsd: number; liveHitCount: number }> {
+  const enriched = await Promise.all(
+    lines.map(async (line): Promise<ComponentLine> => {
+      const live = await fetchLivePrice(line.name, region);
+      if (!live) {
+        // Live lookup failed — keep the catalog price exactly as-is. In
+        // Egypt mode, additionally show an approximate EGP figure so the
+        // team isn't stuck reading a USD-only number, but it is a unit
+        // conversion of the already-known catalog price, NOT a price
+        // recalled from an AI model's memory (deliberately avoided — see
+        // live-pricing.ts for why).
+        if (region === "egypt" && line.status === "approved" && line.unitPriceUsd > 0) {
+          return {
+            ...line,
+            approxLocalPrice: usdToApproxEgp(line.totalPriceUsd),
+            approxLocalCurrency: "EGP",
+          };
+        }
+        return line;
+      }
+      return {
+        ...line,
+        unitPriceUsd: live.priceUsd,
+        totalPriceUsd: round2(live.priceUsd * line.quantity),
+        priceSource: "live",
+        liveStoreName: live.storeName,
+        liveListingUrl: live.listingUrl,
+      };
+    })
+  );
+
+  return {
+    lines: enriched,
+    totalUsd: round2(enriched.reduce((sum, l) => sum + l.totalPriceUsd, 0)),
+    liveHitCount: enriched.filter((l) => l.priceSource === "live").length,
+  };
+}
 
 /* ---------------------------------------------------------------------- */
 /* Deterministic helpers that turn AI output + tool output into the       */
@@ -177,6 +241,25 @@ export async function generatePlan(input: RequirementInput): Promise<RoboPilotPl
     );
   }
 
+  // --- Live pricing (best-effort enhancement — see live-pricing.ts) ---
+  let bomLines = bom.lines;
+  let bomTotalUsd = bom.totalUsd;
+  if (isLivePricingEnabled()) {
+    try {
+      const enriched = await enrichBomWithLivePrices(bom.lines, input.priceRegion);
+      bomLines = enriched.lines;
+      bomTotalUsd = enriched.totalUsd;
+      if (enriched.liveHitCount > 0) {
+        const regionLabel = input.priceRegion === "egypt" ? "Egyptian" : "international";
+        warnings.push(
+          `${enriched.liveHitCount} of ${bomLines.length} component price(s) were fetched live from ${regionLabel} stores; remaining prices use the approved catalog.`
+        );
+      }
+    } catch {
+      // Live pricing must never break plan generation — keep catalog prices.
+    }
+  }
+
   const compatibility = check_compatibility(selections);
   const incompatibleCount = compatibility.filter((c) => !c.compatible).length;
   if (incompatibleCount > 0) {
@@ -192,7 +275,7 @@ export async function generatePlan(input: RequirementInput): Promise<RoboPilotPl
     incompatiblePairCount: incompatibleCount,
     totalEstimatedDays,
     budgetUsd: input.budgetUsd,
-    bomTotalUsd: bom.totalUsd,
+    bomTotalUsd, // post-live-pricing total, more accurate than the catalog-only figure
   });
 
   const tests = buildTestPlan(decomposition.architecture_blocks, selections);
@@ -201,10 +284,10 @@ export async function generatePlan(input: RequirementInput): Promise<RoboPilotPl
     requirements: input.requirements,
     constraints: input.constraints,
     architecture_blocks: decomposition.architecture_blocks,
-    components: bom.lines,
+    components: bomLines,
     compatibility_checks: compatibility,
-    bom_items: bom.lines,
-    bom_total_usd: bom.totalUsd,
+    bom_items: bomLines,
+    bom_total_usd: bomTotalUsd,
     milestones,
     risks,
     tests,
@@ -212,6 +295,7 @@ export async function generatePlan(input: RequirementInput): Promise<RoboPilotPl
     meta: {
       provider_used: providerUsed,
       generated_at: new Date().toISOString(),
+      priceRegion: input.priceRegion,
       warnings,
     },
   };

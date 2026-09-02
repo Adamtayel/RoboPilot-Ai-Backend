@@ -4,6 +4,10 @@ import { generatePlan, ServiceError } from "@/lib/robopilot/service";
 
 // Must run in the Node.js runtime (not Edge) — provider calls need standard fetch + env access.
 export const runtime = "nodejs";
+// Live pricing does several outbound fetches in parallel; give it headroom
+// beyond Vercel's default. (Hobby-tier projects may still cap lower — see
+// docs/architecture.md for the fallback behavior if that happens.)
+export const maxDuration = 30;
 
 const MAX_BODY_BYTES = 20_000;
 

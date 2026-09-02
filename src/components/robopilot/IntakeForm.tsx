@@ -8,6 +8,7 @@ export interface PlanRequestBody {
   constraints: string[];
   budgetUsd?: number;
   targetPlatform: "arduino" | "esp32" | "unspecified";
+  priceRegion: "egypt" | "international";
 }
 
 interface IntakeFormProps {
@@ -31,6 +32,7 @@ export function IntakeForm({ onSubmit, disabled }: IntakeFormProps) {
   const [budgetUsd, setBudgetUsd] = useState("");
   const [targetPlatform, setTargetPlatform] =
     useState<PlanRequestBody["targetPlatform"]>("unspecified");
+  const [priceRegion, setPriceRegion] = useState<PlanRequestBody["priceRegion"]>("egypt");
   const [formError, setFormError] = useState<string | null>(null);
 
   function updateListItem(
@@ -78,6 +80,7 @@ export function IntakeForm({ onSubmit, disabled }: IntakeFormProps) {
       requirements: cleanedRequirements,
       constraints: cleanedConstraints,
       targetPlatform,
+      priceRegion,
     };
 
     const parsedBudget = budgetUsd.trim() === "" ? undefined : Number(budgetUsd);
@@ -170,6 +173,35 @@ export function IntakeForm({ onSubmit, disabled }: IntakeFormProps) {
         >
           + Add constraint
         </button>
+      </div>
+
+      <div className="field">
+        <span className="field__label">Component pricing</span>
+        <div className="region-toggle" role="group" aria-label="Component pricing region">
+          <button
+            type="button"
+            className={priceRegion === "egypt" ? "region-btn region-btn--active" : "region-btn"}
+            onClick={() => setPriceRegion("egypt")}
+            disabled={disabled}
+            aria-pressed={priceRegion === "egypt"}
+          >
+            🇪🇬 Egypt Mode
+          </button>
+          <button
+            type="button"
+            className={priceRegion === "international" ? "region-btn region-btn--active" : "region-btn"}
+            onClick={() => setPriceRegion("international")}
+            disabled={disabled}
+            aria-pressed={priceRegion === "international"}
+          >
+            🌍 International Mode
+          </button>
+        </div>
+        <p className="field__hint">
+          {priceRegion === "egypt"
+            ? "Prices checked live against Electra Store, Makers Electronics and Future Electronics Egypt."
+            : "Prices checked live against SparkFun."}
+        </p>
       </div>
 
       <div className="grid-2">
