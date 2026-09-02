@@ -1,5 +1,37 @@
 [
   {
+    "name": "TCRT5000",
+    "aliases": [
+      "TCRT5000 IR Reflectance Sensor",
+      "TCRT5000 Line Tracking Sensor",
+      "TCRT5000 Reflective Optical Sensor",
+      "IR Reflective Sensor",
+      "IR Reflectance Sensor"
+    ],
+    "category": "sensor",
+    "operatingVoltageV": [3.3, 5],
+    "logicLevelV": [3.3, 5],
+    "interface": "GPIO",
+    "unitPriceUsd": 1.5,
+    "datasheetUrl": "https://www.vishay.com/docs/83760/tcrt5000.pdf"
+  },
+  {
+    "name": "TT Motor (DC Gearbox Motor)",
+    "aliases": [
+      "DC Gear Motor",
+      "TT Gear Motor",
+      "TT DC Gearbox Motor",
+      "DC Gearbox Motor",
+      "TT Motor"
+    ],
+    "category": "actuator",
+    "operatingVoltageV": [3, 6],
+    "logicLevelV": [3.3, 5],
+    "interface": "PWM",
+    "unitPriceUsd": 2.5,
+    "datasheetUrl": "https://media.digikey.com/pdf/Data%20Sheets/Adafruit%20PDFs/3777_Web.pdf"
+  },
+  {
     "name": "Arduino Nano",
     "aliases": ["Nano", "Arduino Nano V3", "ATmega328P Nano"],
     "category": "microcontroller",

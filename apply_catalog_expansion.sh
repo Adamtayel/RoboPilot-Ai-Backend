@@ -1,3 +1,171 @@
+cat > src/lib/robopilot/data/approved-components.json << 'FILE_EOF_1'
+[
+  {
+    "name": "TCRT5000",
+    "aliases": [
+      "TCRT5000 IR Reflectance Sensor",
+      "TCRT5000 Line Tracking Sensor",
+      "TCRT5000 Reflective Optical Sensor",
+      "IR Reflective Sensor",
+      "IR Reflectance Sensor"
+    ],
+    "category": "sensor",
+    "operatingVoltageV": [3.3, 5],
+    "logicLevelV": [3.3, 5],
+    "interface": "GPIO",
+    "unitPriceUsd": 1.5,
+    "datasheetUrl": "https://www.vishay.com/docs/83760/tcrt5000.pdf"
+  },
+  {
+    "name": "TT Motor (DC Gearbox Motor)",
+    "aliases": [
+      "DC Gear Motor",
+      "TT Gear Motor",
+      "TT DC Gearbox Motor",
+      "DC Gearbox Motor",
+      "TT Motor"
+    ],
+    "category": "actuator",
+    "operatingVoltageV": [3, 6],
+    "logicLevelV": [3.3, 5],
+    "interface": "PWM",
+    "unitPriceUsd": 2.5,
+    "datasheetUrl": "https://media.digikey.com/pdf/Data%20Sheets/Adafruit%20PDFs/3777_Web.pdf"
+  },
+  {
+    "name": "Arduino Nano",
+    "aliases": ["Nano", "Arduino Nano V3", "ATmega328P Nano"],
+    "category": "microcontroller",
+    "operatingVoltageV": [5, 5],
+    "logicLevelV": [5],
+    "interface": "GPIO",
+    "unitPriceUsd": 25.0,
+    "datasheetUrl": "https://docs.arduino.cc/hardware/nano/"
+  },
+  {
+    "name": "Arduino Uno R3",
+    "aliases": ["Arduino Uno", "Uno R3", "ATmega328P Uno"],
+    "category": "microcontroller",
+    "operatingVoltageV": [5, 5],
+    "logicLevelV": [5],
+    "interface": "GPIO",
+    "unitPriceUsd": 23.0,
+    "datasheetUrl": "https://docs.arduino.cc/hardware/uno-rev3/"
+  },
+  {
+    "name": "ESP32-WROOM-32 DevKit",
+    "aliases": ["ESP32 DevKit", "ESP32-WROOM-32", "ESP32 Dev Board"],
+    "category": "microcontroller",
+    "operatingVoltageV": [3.3, 3.3],
+    "logicLevelV": [3.3],
+    "interface": "GPIO",
+    "unitPriceUsd": 9.5,
+    "datasheetUrl": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32/hw-reference/esp32/get-started-devkitc.html"
+  },
+  {
+    "name": "HC-SR04",
+    "aliases": ["HC-SR04 Ultrasonic", "Ultrasonic Distance Sensor"],
+    "category": "sensor",
+    "operatingVoltageV": [5, 5],
+    "logicLevelV": [5],
+    "interface": "GPIO",
+    "unitPriceUsd": 3.5,
+    "datasheetUrl": "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf"
+  },
+  {
+    "name": "VL53L0X",
+    "aliases": ["VL53L0X ToF", "Time-of-Flight Distance Sensor"],
+    "category": "sensor",
+    "operatingVoltageV": [2.6, 3.5],
+    "logicLevelV": [3.3],
+    "interface": "I2C",
+    "unitPriceUsd": 6.0,
+    "datasheetUrl": "https://www.st.com/resource/en/datasheet/vl53l0x.pdf"
+  },
+  {
+    "name": "MPU6050",
+    "aliases": ["MPU-6050", "6-axis IMU"],
+    "category": "sensor",
+    "operatingVoltageV": [2.375, 3.46],
+    "logicLevelV": [3.3],
+    "interface": "I2C",
+    "unitPriceUsd": 2.5,
+    "datasheetUrl": "https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Datasheet1.pdf"
+  },
+  {
+    "name": "DHT22",
+    "aliases": ["AM2302", "Temperature Humidity Sensor"],
+    "category": "sensor",
+    "operatingVoltageV": [3.3, 6],
+    "logicLevelV": [3.3, 5],
+    "interface": "GPIO",
+    "unitPriceUsd": 5.0,
+    "datasheetUrl": "https://www.sparkfun.com/datasheets/Sensors/Temperature/DHT22.pdf"
+  },
+  {
+    "name": "NEO-6M GPS Module",
+    "aliases": ["NEO-6M", "GPS Module"],
+    "category": "sensor",
+    "operatingVoltageV": [2.7, 3.6],
+    "logicLevelV": [3.3, 5],
+    "interface": "UART",
+    "unitPriceUsd": 8.0,
+    "datasheetUrl": "https://content.u-blox.com/sites/default/files/products/documents/NEO-6_DataSheet_%28GPS.G6-HW-09005%29.pdf"
+  },
+  {
+    "name": "L298N",
+    "aliases": ["L298N Motor Driver", "Dual H-Bridge Driver"],
+    "category": "actuator_driver",
+    "operatingVoltageV": [5, 35],
+    "logicLevelV": [5],
+    "interface": "PWM",
+    "unitPriceUsd": 4.5,
+    "datasheetUrl": "https://www.st.com/resource/en/datasheet/l298.pdf"
+  },
+  {
+    "name": "MG996R",
+    "aliases": ["MG996R Servo", "Servo Motor"],
+    "category": "actuator",
+    "operatingVoltageV": [4.8, 7.2],
+    "logicLevelV": [3.3, 5],
+    "interface": "PWM",
+    "unitPriceUsd": 6.5,
+    "datasheetUrl": "https://www.electronicoscaldas.com/datasheet/MG996R.pdf"
+  },
+  {
+    "name": "SG90",
+    "aliases": ["SG90 Servo", "Micro Servo"],
+    "category": "actuator",
+    "operatingVoltageV": [4.8, 6],
+    "logicLevelV": [3.3, 5],
+    "interface": "PWM",
+    "unitPriceUsd": 2.0,
+    "datasheetUrl": "https://www.friendlywire.com/projects/rc-lawn-mower-1/SG90-datasheet.pdf"
+  },
+  {
+    "name": "18650 Li-ion Battery + Holder",
+    "aliases": ["18650 Battery", "Li-ion Battery Pack"],
+    "category": "power",
+    "operatingVoltageV": [3.0, 4.2],
+    "logicLevelV": [3.3, 5],
+    "interface": "GPIO",
+    "unitPriceUsd": 7.0,
+    "datasheetUrl": "https://docs.arduino.cc/learn/electronics/power-supplies/"
+  },
+  {
+    "name": "Raspberry Pi Pico W",
+    "aliases": ["Pico W", "RP2040 Pico W"],
+    "category": "microcontroller",
+    "operatingVoltageV": [3.3, 3.3],
+    "logicLevelV": [3.3],
+    "interface": "GPIO",
+    "unitPriceUsd": 6.0,
+    "datasheetUrl": "https://datasheets.raspberrypi.com/picow/pico-w-datasheet.pdf"
+  }
+]
+FILE_EOF_1
+
+cat > tests/unit/tools.test.ts << 'FILE_EOF_2'
 import { describe, expect, it } from "vitest";
 import { check_compatibility, estimate_bom, project_risk } from "@/lib/robopilot/tools";
 
@@ -286,3 +454,6 @@ describe("project_risk", () => {
     }
   });
 });
+FILE_EOF_2
+
+echo "Done. Run: npm run typecheck && npm test (expect 62 passed)"
