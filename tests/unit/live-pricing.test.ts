@@ -80,6 +80,13 @@ describe("extractBestMatch", () => {
     // Asking for EGP but the page only has a $ price — should not match.
     expect(extractBestMatch(html, "https://electra.store/", "EGP")).toBeNull();
   });
+
+  // --- Same real bug as buildCandidateSnippets below: a loose "product" ---
+  // --- substring check was matching WooCommerce category/tag nav links. ---
+  it("does not mistake a '/product-category/' navigation link for a real listing", () => {
+    const html = `<a href="https://makerselectronics.com/product-category/robotics">Robotics</a> 400.00 EGP`;
+    expect(extractBestMatch(html, "https://makerselectronics.com/", "EGP")).toBeNull();
+  });
 });
 
 // --- usdToApproxEgp: a plain, deterministic unit conversion of an already- ---
@@ -134,5 +141,29 @@ describe("buildCandidateSnippets", () => {
     const snippets = buildCandidateSnippets(html);
     expect(snippets).not.toContain("trackClick");
     expect(snippets).not.toContain("color:red");
+  });
+
+  // --- Real bug found by directly inspecting a live Makers Electronics    ---
+  // --- product page: hundreds of "/product-category/..." and             ---
+  // --- "/product-tag/..." navigation links all matched a loose "product" ---
+  // --- substring check, so every candidate snippet sent to DeepSeek was  ---
+  // --- category-menu noise instead of an actual listing — DeepSeek's     ---
+  // --- found:false responses were correct given what it was shown.       ---
+  it("does NOT treat WooCommerce category/tag navigation links as product listings", () => {
+    const html = [
+      '<a href="https://makerselectronics.com/product-category/robotics">Robotics</a>',
+      '<a href="https://makerselectronics.com/product-category/sensors">Sensors</a>',
+      '<a href="https://makerselectronics.com/product-tag/esp32">esp32</a>',
+    ].join("");
+    expect(buildCandidateSnippets(html)).toBe("");
+  });
+
+  it("still correctly matches a real WooCommerce product link alongside category noise", () => {
+    const html = [
+      '<a href="https://makerselectronics.com/product-category/robotics">Robotics</a>',
+      '<a href="https://makerselectronics.com/product/esp32-development-board-38-pin">ESP32 Development Board</a> 400.00 EGP',
+    ].join("");
+    const snippets = buildCandidateSnippets(html);
+    expect(snippets).toContain("ESP32 Development Board");
   });
 });
