@@ -236,7 +236,7 @@ export function IntakeForm({ onSubmit, disabled }: IntakeFormProps) {
             inputMode="decimal"
             value={budgetUsd}
             onChange={(e) => setBudgetUsd(e.target.value)}
-            placeholder={isEgypt ? "e.g. 1000" : "e.g. 80"}
+            placeholder={isEgypt ? "e.g. 1000 LE" : "e.g. 80 USD"}
             disabled={disabled}
           />
         </div>
