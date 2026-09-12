@@ -7,20 +7,90 @@ architecture, components, BOM estimates, risks, milestones, and grounded
 component guidance — for robotics clubs, embedded-systems teams, and
 capstone groups.
 
-## Status
+## Team
 
-| Module | Owner | Status |
-|---|---|---|
-| AI & Backend (API, schemas, providers, deterministic tools) | Adam Tayel | ✅ Done — see `docs/ai-backend-module.md` |
-| Integration / Architecture / Deployment | Adam Tayel | ✅ Done — public deployment live on Vercel |
-| Product UI & Workflow | Youssef Mashhour | ✅ Done — intake form, results view, robot logo, animated region toggle — see §"Product UI" below |
-| Knowledge, Tools & Quality | Mina Rimon | ✅ Done — 26-component catalog, live pricing, 10-case evaluation report — see `docs/evaluation.md` and `docs/source-register.md` |
+| Module | Owner |
+|---|---|
+| AI & Backend (API, schemas, providers, deterministic tools) | Adam Tayel |
+| Integration / Architecture / Deployment | Adam Tayel |
+| Product UI & Workflow | Youssef Mashhour |
+| Knowledge, Tools & Quality | Mina Rimon |
 
 *(Team composition changed after the initial assignment — Adam covered all
 four roles for the working system described below. See `AI_USAGE.md` for
 how AI assistance was used and verified across each module. See
 "What each teammate should be able to explain" below for how the team is
 catching up on the parts they didn't build, ahead of individual defense.)*
+
+## System architecture
+
+```mermaid
+flowchart TD
+    User(["👤 User"]) -->|"requirements, constraints,<br/>budget, pricing region"| UI
+
+    subgraph Frontend["Frontend — Next.js Client"]
+        UI["IntakeForm.tsx<br/>Egypt / International toggle"]
+        Results["PlanResults.tsx<br/>Architecture · BOM · Compatibility<br/>Milestones · Risks"]
+    end
+
+    UI -->|"POST /api/robopilot"| Validate
+
+    subgraph API["API Route — src/app/api/robopilot"]
+        Validate["Zod schema validation"]
+        Assemble["Assemble final plan"]
+    end
+
+    subgraph AI["AI decomposition — proposes structure only"]
+        direction LR
+        Groq["Groq<br/>(primary)"] -.->|"on failure"| Gemini["Gemini<br/>(fallback)"]
+    end
+
+    subgraph Deterministic["tools.ts — deterministic, never calls an AI model"]
+        BOM["estimate_bom()"]
+        Compat["check_compatibility()"]
+        Risk["project_risk()"]
+        Catalog[("approved-components.json<br/>26 parts, real datasheets")]
+    end
+
+    subgraph LivePricing["live-pricing.ts — best-effort price enrichment"]
+        DeepSeek["DeepSeek<br/>reads real fetched HTML"]
+        Regex["regex fallback"]
+        Check{"isPlausiblePrice()<br/>sanity check"}
+    end
+
+    subgraph Stores["Real storefronts"]
+        EG["Egypt Mode:<br/>Electra Store · Makers Electronics<br/>Future Electronics Egypt"]
+        INTL["International Mode:<br/>SparkFun"]
+    end
+
+    Validate --> Groq
+    Validate --> BOM
+    Groq --> Assemble
+    Gemini --> Assemble
+    BOM --> Catalog
+    Compat --> Catalog
+    BOM --> DeepSeek
+    DeepSeek --> Regex
+    DeepSeek --> EG
+    DeepSeek --> INTL
+    Regex --> EG
+    Regex --> INTL
+    DeepSeek --> Check
+    Regex --> Check
+    Check -->|"implausible → fall back<br/>to catalog price"| BOM
+    Check -->|"plausible → use it"| Assemble
+    Compat --> Assemble
+    Risk --> Assemble
+    Assemble --> Results
+    Results --> User
+```
+
+**The one rule that shapes everything above:** the AI layer (Groq/Gemini/
+DeepSeek) only ever *proposes* or *reads real fetched content* — it never
+computes a price, a compatibility result, or a risk score directly. Those
+three are 100% deterministic code in `tools.ts`, and any live-scraped price
+is sanity-checked against the known catalog reference before it's trusted.
+See `docs/evaluation.md` Case 4 for a real incident this caught.
 
 ## Problem
 
