@@ -1,24 +1,14 @@
-const STEPS = [
-  "Validating request…",
-  "Decomposing requirements…",
-  "Checking approved catalog…",
-  "Scoring project risk…",
-];
+import { RobotLogo } from "./RobotLogo";
 
 export function LoadingState() {
   return (
     <div className="panel state-panel">
-      <div className="scan" aria-hidden="true" />
-      <p className="state-panel__title">Generating plan</p>
+      <RobotLogo size={96} state="thinking" />
+      <h2 className="state-panel__title">Thinking…</h2>
       <p className="state-panel__body">
-        Requirements are being decomposed and checked against the approved component catalog.
-        This usually takes a few seconds.
+        Decomposing the requirements, checking the approved catalog, and
+        pricing components live. This usually takes a few seconds.
       </p>
-      <div className="loading-log" role="status" aria-live="polite">
-        {STEPS.map((s) => (
-          <div key={s}>{s}</div>
-        ))}
-      </div>
     </div>
   );
 }

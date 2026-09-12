@@ -55,13 +55,18 @@ export default function Home() {
   }
 
   return (
-    <div className="shell">
-      <header className="header">
+    <div className="shell page-bg">
+      <div className="bg-gear bg-gear--1" />
+      <div className="bg-gear bg-gear--2" />
+      <div className="bg-rocket">🚀</div>
+      <div className="bg-rocket bg-rocket--2">🚀</div>
+      <div className="bg-satellite">🛰️</div>
+      <div className="bg-drone">🤖</div>
+      <header className="site-header">
         <div>
-          <h1 className="header__title">RoboPilot</h1>
-          <p className="header__tag">robotics &amp; embedded project engineering copilot</p>
+          <h1 className="site-title">RoboPilot</h1>
+          <p className="site-tagline">robotics &amp; embedded project engineering copilot</p>
         </div>
-        <span className="header__badge">Team 05</span>
       </header>
 
       <div className="layout">
@@ -71,7 +76,11 @@ export default function Home() {
           {view.status === "idle" && <EmptyState />}
           {view.status === "loading" && <LoadingState />}
           {view.status === "error" && <ErrorState message={view.message} onRetry={retry} />}
-          {view.status === "success" && <PlanResults plan={view.plan} />}
+          {view.status === "success" && (
+            <div className="result-enter">
+              <PlanResults plan={view.plan} />
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -17,13 +17,15 @@ interface IntakeFormProps {
 }
 
 const EXAMPLE = {
-  projectName: "Line-following rover",
+  projectName: "Autonomous Guardian Rover",
   requirements: [
     "Detect obstacles within 30cm",
     "Follow a black line on a white floor",
   ],
   constraints: ["Budget under $80"],
 };
+
+const EGP_TO_USD_DISPLAY_RATE = 0.021;
 
 export function IntakeForm({ onSubmit, disabled }: IntakeFormProps) {
   const [projectName, setProjectName] = useState("");
@@ -34,6 +36,22 @@ export function IntakeForm({ onSubmit, disabled }: IntakeFormProps) {
     useState<PlanRequestBody["targetPlatform"]>("unspecified");
   const [priceRegion, setPriceRegion] = useState<PlanRequestBody["priceRegion"]>("egypt");
   const [formError, setFormError] = useState<string | null>(null);
+
+  const isEgypt = priceRegion === "egypt";
+
+  function switchRegion(nextRegion: PlanRequestBody["priceRegion"]) {
+    if (nextRegion === priceRegion) return;
+    const current = budgetUsd.trim();
+    if (current !== "" && !Number.isNaN(Number(current))) {
+      const value = Number(current);
+      const converted =
+        nextRegion === "egypt"
+          ? Math.round(value / EGP_TO_USD_DISPLAY_RATE)
+          : Math.round(value * EGP_TO_USD_DISPLAY_RATE * 100) / 100;
+      setBudgetUsd(String(converted));
+    }
+    setPriceRegion(nextRegion);
+  }
 
   function updateListItem(
     list: string[],
@@ -54,7 +72,7 @@ export function IntakeForm({ onSubmit, disabled }: IntakeFormProps) {
     setProjectName(EXAMPLE.projectName);
     setRequirements(EXAMPLE.requirements);
     setConstraints(EXAMPLE.constraints);
-    setBudgetUsd("80");
+    setBudgetUsd(isEgypt ? String(Math.round(80 / EGP_TO_USD_DISPLAY_RATE)) : "80");
     setTargetPlatform("esp32");
     setFormError(null);
   }
@@ -89,7 +107,9 @@ export function IntakeForm({ onSubmit, disabled }: IntakeFormProps) {
         setFormError("Budget must be a positive number.");
         return;
       }
-      body.budgetUsd = parsedBudget;
+      body.budgetUsd = isEgypt
+        ? Math.round(parsedBudget * EGP_TO_USD_DISPLAY_RATE * 100) / 100
+        : parsedBudget;
     }
 
     onSubmit(body);
@@ -106,7 +126,7 @@ export function IntakeForm({ onSubmit, disabled }: IntakeFormProps) {
           className="input"
           value={projectName}
           onChange={(e) => setProjectName(e.target.value)}
-          placeholder="e.g. Line-following rover"
+          placeholder="e.g. Autonomous Guardian Rover"
           disabled={disabled}
         />
       </div>
@@ -178,27 +198,28 @@ export function IntakeForm({ onSubmit, disabled }: IntakeFormProps) {
       <div className="field">
         <span className="field__label">Component pricing</span>
         <div className="region-toggle" role="group" aria-label="Component pricing region">
+          <div className={isEgypt ? "mode-pill-indicator" : "mode-pill-indicator mode-pill-indicator--right"} />
           <button
             type="button"
-            className={priceRegion === "egypt" ? "region-btn region-btn--active" : "region-btn"}
-            onClick={() => setPriceRegion("egypt")}
+            className={isEgypt ? "region-btn region-btn--active" : "region-btn"}
+            onClick={() => switchRegion("egypt")}
             disabled={disabled}
-            aria-pressed={priceRegion === "egypt"}
+            aria-pressed={isEgypt}
           >
-            🇪🇬 Egypt Mode
+            Egypt <span className="currency-badge">LE</span>
           </button>
           <button
             type="button"
-            className={priceRegion === "international" ? "region-btn region-btn--active" : "region-btn"}
-            onClick={() => setPriceRegion("international")}
+            className={!isEgypt ? "region-btn region-btn--active" : "region-btn"}
+            onClick={() => switchRegion("international")}
             disabled={disabled}
-            aria-pressed={priceRegion === "international"}
+            aria-pressed={!isEgypt}
           >
-            🌍 International Mode
+            International <span className="currency-badge">$</span>
           </button>
         </div>
         <p className="field__hint">
-          {priceRegion === "egypt"
+          {isEgypt
             ? "Prices checked live against Electra Store, Makers Electronics and Future Electronics Egypt."
             : "Prices checked live against SparkFun."}
         </p>
@@ -207,7 +228,7 @@ export function IntakeForm({ onSubmit, disabled }: IntakeFormProps) {
       <div className="grid-2">
         <div className="field">
           <label className="field__label" htmlFor="budget">
-            Budget (USD, optional)
+            Budget ({isEgypt ? "LE" : "USD"}, optional)
           </label>
           <input
             id="budget"
@@ -215,7 +236,7 @@ export function IntakeForm({ onSubmit, disabled }: IntakeFormProps) {
             inputMode="decimal"
             value={budgetUsd}
             onChange={(e) => setBudgetUsd(e.target.value)}
-            placeholder="e.g. 80"
+            placeholder={isEgypt ? "e.g. 800" : "e.g. 60"}
             disabled={disabled}
           />
         </div>

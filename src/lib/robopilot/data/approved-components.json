@@ -9,8 +9,14 @@
       "IR Reflectance Sensor"
     ],
     "category": "sensor",
-    "operatingVoltageV": [3.3, 5],
-    "logicLevelV": [3.3, 5],
+    "operatingVoltageV": [
+      3.3,
+      5
+    ],
+    "logicLevelV": [
+      3.3,
+      5
+    ],
     "interface": "GPIO",
     "unitPriceUsd": 1.5,
     "datasheetUrl": "https://www.vishay.com/docs/83760/tcrt5000.pdf"
@@ -25,140 +31,322 @@
       "TT Motor"
     ],
     "category": "actuator",
-    "operatingVoltageV": [3, 6],
-    "logicLevelV": [3.3, 5],
+    "operatingVoltageV": [
+      3,
+      6
+    ],
+    "logicLevelV": [
+      3.3,
+      5
+    ],
     "interface": "PWM",
     "unitPriceUsd": 2.5,
     "datasheetUrl": "https://media.digikey.com/pdf/Data%20Sheets/Adafruit%20PDFs/3777_Web.pdf"
   },
   {
     "name": "Arduino Nano",
-    "aliases": ["Nano", "Arduino Nano V3", "ATmega328P Nano"],
+    "aliases": [
+      "Nano",
+      "Arduino Nano V3",
+      "ATmega328P Nano"
+    ],
     "category": "microcontroller",
-    "operatingVoltageV": [5, 5],
-    "logicLevelV": [5],
+    "operatingVoltageV": [
+      5,
+      5
+    ],
+    "logicLevelV": [
+      5
+    ],
     "interface": "GPIO",
-    "unitPriceUsd": 25.0,
+    "unitPriceUsd": 25,
     "datasheetUrl": "https://docs.arduino.cc/hardware/nano/"
   },
   {
     "name": "Arduino Uno R3",
-    "aliases": ["Arduino Uno", "Uno R3", "ATmega328P Uno"],
+    "aliases": [
+      "Arduino Uno",
+      "Uno R3",
+      "ATmega328P Uno"
+    ],
     "category": "microcontroller",
-    "operatingVoltageV": [5, 5],
-    "logicLevelV": [5],
+    "operatingVoltageV": [
+      5,
+      5
+    ],
+    "logicLevelV": [
+      5
+    ],
     "interface": "GPIO",
-    "unitPriceUsd": 23.0,
+    "unitPriceUsd": 23,
     "datasheetUrl": "https://docs.arduino.cc/hardware/uno-rev3/"
   },
   {
     "name": "ESP32-WROOM-32 DevKit",
-    "aliases": ["ESP32 DevKit", "ESP32-WROOM-32", "ESP32 Dev Board"],
+    "aliases": [
+      "ESP32 DevKit",
+      "ESP32-WROOM-32",
+      "ESP32 Dev Board"
+    ],
     "category": "microcontroller",
-    "operatingVoltageV": [3.3, 3.3],
-    "logicLevelV": [3.3],
+    "operatingVoltageV": [
+      3.3,
+      3.3
+    ],
+    "logicLevelV": [
+      3.3
+    ],
     "interface": "GPIO",
     "unitPriceUsd": 9.5,
     "datasheetUrl": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32/hw-reference/esp32/get-started-devkitc.html"
   },
   {
     "name": "HC-SR04",
-    "aliases": ["HC-SR04 Ultrasonic", "Ultrasonic Distance Sensor"],
+    "aliases": [
+      "HC-SR04 Ultrasonic",
+      "Ultrasonic Distance Sensor"
+    ],
     "category": "sensor",
-    "operatingVoltageV": [5, 5],
-    "logicLevelV": [5],
+    "operatingVoltageV": [
+      5,
+      5
+    ],
+    "logicLevelV": [
+      5
+    ],
     "interface": "GPIO",
     "unitPriceUsd": 3.5,
     "datasheetUrl": "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf"
   },
   {
     "name": "VL53L0X",
-    "aliases": ["VL53L0X ToF", "Time-of-Flight Distance Sensor"],
+    "aliases": [
+      "VL53L0X ToF",
+      "Time-of-Flight Distance Sensor"
+    ],
     "category": "sensor",
-    "operatingVoltageV": [2.6, 3.5],
-    "logicLevelV": [3.3],
+    "operatingVoltageV": [
+      2.6,
+      3.5
+    ],
+    "logicLevelV": [
+      3.3
+    ],
     "interface": "I2C",
-    "unitPriceUsd": 6.0,
+    "unitPriceUsd": 6,
     "datasheetUrl": "https://www.st.com/resource/en/datasheet/vl53l0x.pdf"
   },
   {
     "name": "MPU6050",
-    "aliases": ["MPU-6050", "6-axis IMU"],
+    "aliases": [
+      "MPU-6050",
+      "6-axis IMU"
+    ],
     "category": "sensor",
-    "operatingVoltageV": [2.375, 3.46],
-    "logicLevelV": [3.3],
+    "operatingVoltageV": [
+      2.375,
+      3.46
+    ],
+    "logicLevelV": [
+      3.3
+    ],
     "interface": "I2C",
     "unitPriceUsd": 2.5,
     "datasheetUrl": "https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Datasheet1.pdf"
   },
   {
     "name": "DHT22",
-    "aliases": ["AM2302", "Temperature Humidity Sensor"],
+    "aliases": [
+      "AM2302",
+      "Temperature Humidity Sensor"
+    ],
     "category": "sensor",
-    "operatingVoltageV": [3.3, 6],
-    "logicLevelV": [3.3, 5],
+    "operatingVoltageV": [
+      3.3,
+      6
+    ],
+    "logicLevelV": [
+      3.3,
+      5
+    ],
     "interface": "GPIO",
-    "unitPriceUsd": 5.0,
+    "unitPriceUsd": 5,
     "datasheetUrl": "https://www.sparkfun.com/datasheets/Sensors/Temperature/DHT22.pdf"
   },
   {
     "name": "NEO-6M GPS Module",
-    "aliases": ["NEO-6M", "GPS Module"],
+    "aliases": [
+      "NEO-6M",
+      "GPS Module"
+    ],
     "category": "sensor",
-    "operatingVoltageV": [2.7, 3.6],
-    "logicLevelV": [3.3, 5],
+    "operatingVoltageV": [
+      2.7,
+      3.6
+    ],
+    "logicLevelV": [
+      3.3,
+      5
+    ],
     "interface": "UART",
-    "unitPriceUsd": 8.0,
+    "unitPriceUsd": 8,
     "datasheetUrl": "https://content.u-blox.com/sites/default/files/products/documents/NEO-6_DataSheet_%28GPS.G6-HW-09005%29.pdf"
   },
   {
     "name": "L298N",
-    "aliases": ["L298N Motor Driver", "Dual H-Bridge Driver"],
+    "aliases": [
+      "L298N Motor Driver",
+      "Dual H-Bridge Driver"
+    ],
     "category": "actuator_driver",
-    "operatingVoltageV": [5, 35],
-    "logicLevelV": [5],
+    "operatingVoltageV": [
+      5,
+      35
+    ],
+    "logicLevelV": [
+      5
+    ],
     "interface": "PWM",
     "unitPriceUsd": 4.5,
     "datasheetUrl": "https://www.st.com/resource/en/datasheet/l298.pdf"
   },
   {
     "name": "MG996R",
-    "aliases": ["MG996R Servo", "Servo Motor"],
+    "aliases": [
+      "MG996R Servo",
+      "Servo Motor"
+    ],
     "category": "actuator",
-    "operatingVoltageV": [4.8, 7.2],
-    "logicLevelV": [3.3, 5],
+    "operatingVoltageV": [
+      4.8,
+      7.2
+    ],
+    "logicLevelV": [
+      3.3,
+      5
+    ],
     "interface": "PWM",
     "unitPriceUsd": 6.5,
     "datasheetUrl": "https://www.electronicoscaldas.com/datasheet/MG996R.pdf"
   },
   {
     "name": "SG90",
-    "aliases": ["SG90 Servo", "Micro Servo"],
+    "aliases": [
+      "SG90 Servo",
+      "Micro Servo"
+    ],
     "category": "actuator",
-    "operatingVoltageV": [4.8, 6],
-    "logicLevelV": [3.3, 5],
+    "operatingVoltageV": [
+      4.8,
+      6
+    ],
+    "logicLevelV": [
+      3.3,
+      5
+    ],
     "interface": "PWM",
-    "unitPriceUsd": 2.0,
+    "unitPriceUsd": 2,
     "datasheetUrl": "https://www.friendlywire.com/projects/rc-lawn-mower-1/SG90-datasheet.pdf"
   },
   {
     "name": "18650 Li-ion Battery + Holder",
-    "aliases": ["18650 Battery", "Li-ion Battery Pack"],
+    "aliases": [
+      "18650 Battery",
+      "Li-ion Battery Pack"
+    ],
     "category": "power",
-    "operatingVoltageV": [3.0, 4.2],
-    "logicLevelV": [3.3, 5],
+    "operatingVoltageV": [
+      3,
+      4.2
+    ],
+    "logicLevelV": [
+      3.3,
+      5
+    ],
     "interface": "GPIO",
-    "unitPriceUsd": 7.0,
+    "unitPriceUsd": 7,
     "datasheetUrl": "https://docs.arduino.cc/learn/electronics/power-supplies/"
   },
   {
     "name": "Raspberry Pi Pico W",
-    "aliases": ["Pico W", "RP2040 Pico W"],
+    "aliases": [
+      "Pico W",
+      "RP2040 Pico W"
+    ],
     "category": "microcontroller",
-    "operatingVoltageV": [3.3, 3.3],
-    "logicLevelV": [3.3],
+    "operatingVoltageV": [
+      3.3,
+      3.3
+    ],
+    "logicLevelV": [
+      3.3
+    ],
     "interface": "GPIO",
-    "unitPriceUsd": 6.0,
+    "unitPriceUsd": 6,
     "datasheetUrl": "https://datasheets.raspberrypi.com/picow/pico-w-datasheet.pdf"
+  },
+  {
+    "name": "MicroSD Card Module",
+    "aliases": [
+      "MicroSD Card Reader Module",
+      "SD Card Module",
+      "Micro SD Breakout Board",
+      "SD Card Breakout"
+    ],
+    "category": "sensor",
+    "operatingVoltageV": [
+      3.3,
+      5
+    ],
+    "logicLevelV": [
+      3.3,
+      5
+    ],
+    "interface": "SPI",
+    "unitPriceUsd": 1.5,
+    "datasheetUrl": "https://www.pololu.com/product/2587"
+  },
+  {
+    "name": "Capacitive Soil Moisture Sensor V2.0",
+    "aliases": [
+      "Capacitive Soil Moisture Sensor",
+      "Soil Moisture Sensor",
+      "YL-69 Soil Moisture Sensor",
+      "Soil Hygrometer Sensor"
+    ],
+    "category": "sensor",
+    "operatingVoltageV": [
+      3.3,
+      5.5
+    ],
+    "logicLevelV": [
+      3.3,
+      5
+    ],
+    "interface": "Analog",
+    "unitPriceUsd": 2,
+    "datasheetUrl": "https://makerselectronics.com/product/capacitive-soil-moisture-sensor-v2-0/"
+  },
+  {
+    "name": "Mini Submersible DC Water Pump",
+    "aliases": [
+      "DC Water Pump",
+      "Submersible Water Pump",
+      "Mini Water Pump",
+      "5V Water Pump",
+      "12V DC Water Pump"
+    ],
+    "category": "actuator",
+    "operatingVoltageV": [
+      3,
+      6
+    ],
+    "logicLevelV": [
+      3.3,
+      5
+    ],
+    "interface": "GPIO",
+    "unitPriceUsd": 3,
+    "datasheetUrl": "https://www.cytron.io/p-micro-submersible-water-pump-dc-3v-5v"
   }
 ]
