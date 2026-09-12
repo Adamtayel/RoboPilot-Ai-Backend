@@ -228,7 +228,7 @@ export function IntakeForm({ onSubmit, disabled }: IntakeFormProps) {
       <div className="grid-2">
         <div className="field">
           <label className="field__label" htmlFor="budget">
-            Budget ({isEgypt ? "LE" : "USD"}, optional)
+           Budget ({isEgypt ? "LE" : "USD"})
           </label>
           <input
             id="budget"
