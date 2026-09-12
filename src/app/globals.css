@@ -237,6 +237,7 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
+  align-items: end;
 }
 @media (max-width: 480px) {
   .grid-2 {
