@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { EGP_TO_USD_FALLBACK_RATE } from "@/lib/robopilot/fx";
 
 export interface PlanRequestBody {
   projectName: string;
@@ -25,7 +26,7 @@ const EXAMPLE = {
   constraints: ["Budget under $80"],
 };
 
-const EGP_TO_USD_DISPLAY_RATE = 0.021;
+
 
 export function IntakeForm({ onSubmit, disabled }: IntakeFormProps) {
   const [projectName, setProjectName] = useState("");
@@ -46,8 +47,8 @@ export function IntakeForm({ onSubmit, disabled }: IntakeFormProps) {
       const value = Number(current);
       const converted =
         nextRegion === "egypt"
-          ? Math.round(value / EGP_TO_USD_DISPLAY_RATE)
-          : Math.round(value * EGP_TO_USD_DISPLAY_RATE * 100) / 100;
+          ? Math.round(value / EGP_TO_USD_FALLBACK_RATE)
+          : Math.round(value * EGP_TO_USD_FALLBACK_RATE * 100) / 100;
       setBudgetUsd(String(converted));
     }
     setPriceRegion(nextRegion);
@@ -72,7 +73,7 @@ export function IntakeForm({ onSubmit, disabled }: IntakeFormProps) {
     setProjectName(EXAMPLE.projectName);
     setRequirements(EXAMPLE.requirements);
     setConstraints(EXAMPLE.constraints);
-    setBudgetUsd(isEgypt ? String(Math.round(80 / EGP_TO_USD_DISPLAY_RATE)) : "80");
+    setBudgetUsd(isEgypt ? String(Math.round(80 / EGP_TO_USD_FALLBACK_RATE)) : "80");
     setTargetPlatform("esp32");
     setFormError(null);
   }
@@ -108,7 +109,7 @@ export function IntakeForm({ onSubmit, disabled }: IntakeFormProps) {
         return;
       }
       body.budgetUsd = isEgypt
-        ? Math.round(parsedBudget * EGP_TO_USD_DISPLAY_RATE * 100) / 100
+        ? Math.round(parsedBudget * EGP_TO_USD_FALLBACK_RATE * 100) / 100
         : parsedBudget;
     }
 

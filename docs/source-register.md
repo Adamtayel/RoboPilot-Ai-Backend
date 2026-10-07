@@ -15,6 +15,7 @@ than presented as equally certain.
 | ESP32-WROOM-32 DevKit | microcontroller | Espressif official docs | ✅ |
 | Arduino Uno R3 | microcontroller | Arduino official docs | ✅ |
 | Arduino Nano | microcontroller | docs.arduino.cc | ✅ |
+| Raspberry Pi Pico W | microcontroller | datasheets.raspberrypi.com (pico-w-datasheet.pdf) | ✅ |
 | HC-SR04 | sensor | SparkFun | ✅ |
 | VL53L0X | sensor | ST official | ✅ |
 | MPU6050 | sensor | InvenSense official | ✅ |

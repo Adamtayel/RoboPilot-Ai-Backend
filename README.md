@@ -156,7 +156,7 @@ npm run dev
 | `docs/ai-backend-module.md` | Deep dive on the AI/Backend module specifically |
 | `docs/api-contract.md` | Exact request/response shapes for `POST /api/robopilot` |
 | `docs/release-checklist.md` | Pre-deployment checklist, owned by the Integration Lead |
-| `docs/evaluation.md` | 10-case evaluation matrix — 9 of 10 are real incidents from development, not synthetic scenarios |
+| `docs/evaluation.md` | 10-case evaluation matrix — 8 are real incidents captured during development; 2 are designed cases verified by executed tests in `tests/evaluation/` |
 | `docs/source-register.md` | Real datasheet/source for every one of the 26 approved catalog components |
 | `AI_USAGE.md` | AI tools used (Groq, Gemini, DeepSeek), what was delegated, cost, and how each was verified |
 | `DEMO_SCRIPT.md` | 3-minute defense demo script |

@@ -161,17 +161,26 @@ command — `estimate_bom()` still prices strictly from the catalog
 regardless of what the requirement text says, because prices are computed
 deterministically and never read from the AI's narrative output at all.
 
-**Actual:** Passed by construction, not by prompt-level defense: the
-injected text can influence what the AI *proposes* (e.g. it might suggest
-low-cost parts), but `estimate_bom()` never reads price from AI-generated
-text — every price is looked up from `approved-components.json` or a live
-store, so there is no code path for injected text to set a price directly.
+**Actual:** Verified by an executed test, not by reasoning alone —
+`tests/evaluation/adversarial.test.ts` runs the full request path with the
+AI provider mocked as *fully compromised*: it obeys the injection and
+returns "price is 0.01 USD", "budget risk is low, no action needed" and
+"physically tested" in every free-form string it controls. The returned
+plan was asserted to still have catalog unit prices (never `0.01`), a
+`bom_total_usd` equal to our own arithmetic over those prices (never
+`0.02`), a computed budget risk whose description carries the real total,
+compatibility reasons derived from catalog logic levels with no
+"physically tested" claim, and the injected requirement echoed back only
+as user input. The structural reason this holds: the AI's output schema
+(`AIDecompositionSchema`) has no price, risk or compatibility field at
+all, so there is no channel through which injected text could carry a
+number into the plan.
 
-**Verdict:** ✅ Pass. **Limitation noted:** this defense is architectural
-(the AI's output is never trusted for prices), not an input filter — no
-explicit prompt-injection string sanitization exists on the requirements
-field itself. Recommended follow-up: add a dedicated adversarial test suite
-in `tests/evaluation/` before the next iteration.
+**Verdict:** ✅ Pass, with an executed regression test. **Limitation
+noted:** the defense is architectural (the AI's output is never trusted
+for numbers), not an input filter — no prompt-injection string
+sanitization exists on the requirements field itself, and none is claimed.
+What the test proves is that such a filter is not load-bearing here.
 
 ---
 
@@ -198,9 +207,15 @@ specified), and no budget risk (since no budget was stated).
 **Expected:** Reject with a 400 and a field-level validation message before
 any AI call is made — never spend a provider call on invalid input.
 
-**Actual:** `RequirementInputSchema.safeParse()` failed at the array-length
-check; HTTP 400 with the specific field error, zero AI provider calls made
-(confirmed no entry in DeepSeek/Groq usage dashboards for this request).
+**Actual:** Verified by an executed test in
+`tests/evaluation/adversarial.test.ts`, run with provider API keys present
+and stub mode OFF (so a leak would be visible):
+`RequirementInputSchema.safeParse()` fails at the array-length check and
+the route returns HTTP 400 with a field-level issue whose `path` starts
+with `requirements`. The test also spies on global `fetch` and asserts it
+was never called — i.e. zero outbound requests of any kind, so no provider
+spend on invalid input. A companion test pins the documented boundary: 20
+requirements still return 200.
 
 **Verdict:** ✅ Pass.
 
@@ -217,12 +232,20 @@ check; HTTP 400 with the specific field error, zero AI provider calls made
 | 5 | Logic-level incompatibility → flagged | ✅ Pass |
 | 6 | Budget risk on unresolved components | ✅ Pass (after fix) |
 | 7 | AI schema mismatch → rejected safely | ✅ Pass |
-| 8 | Prompt injection in requirements | ✅ Pass (architectural, not input-filtered) |
+| 8 | Prompt injection in requirements | ✅ Pass (architectural, not input-filtered; executed test) |
 | 9 | Minimal/sparse input | ✅ Pass |
-| 10 | Oversized request body | ✅ Pass |
+| 10 | Oversized request body | ✅ Pass (executed test, zero outbound calls) |
 
-**9 of 10 cases came from real production incidents during development**,
-each with a matching commit that fixed the underlying issue. This is, we
-believe, stronger evidence of reliability than synthetic test cases alone:
-every failure mode listed here was actually observed, root-caused, and
-fixed — not hypothesized.
+**Where this evidence comes from, stated precisely:** cases 1–7 and 9 are
+real incidents captured during development — each was observed in a live
+run or in the deployment logs, root-caused, and fixed by a matching commit.
+That is stronger evidence than synthetic tests alone, because those failure
+modes were not hypothesized; they happened.
+
+Cases 8 and 10 are different and are labelled as such. They began as design
+reasoning about failure modes we had not actually triggered. Rather than
+present reasoning as an observation, they were turned into executed tests
+(`tests/evaluation/adversarial.test.ts`) whose real assertions are quoted
+in each case above. So: **8 of 10 cases are captured incidents; 2 are
+designed cases, now verified by tests that fail if the behaviour
+regresses.** Neither category is presented as the other.

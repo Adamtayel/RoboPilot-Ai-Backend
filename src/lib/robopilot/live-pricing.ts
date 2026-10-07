@@ -26,6 +26,7 @@
  */
 
 import { extractWithDeepSeek } from "./deepseek-extractor";
+import { EGP_TO_USD_FALLBACK_RATE } from "./fx";
 
 export type PriceRegion = "egypt" | "international";
 
@@ -121,11 +122,11 @@ export function buildCandidateSnippets(html: string): string {
   return snippets.join("\n---\n");
 }
 
-// Approximate, hand-set fallback rate — used ONLY when the live exchange-rate
-// API also fails. Expect this to drift out of date; refresh periodically.
-// Never sourced from an AI model's memory — see module-level docs above for
-// why that specific approach is deliberately avoided in this project.
-export const EGP_TO_USD_FALLBACK_RATE = 0.021; // ≈ 47.6 EGP per USD
+// Used ONLY when the live exchange-rate API call also fails. Defined in
+// ./fx.ts because the client-side budget field needs the same number — see
+// that file for why it is deliberately a shared constant. Re-exported here so
+// existing importers (and tests) keep working.
+export { EGP_TO_USD_FALLBACK_RATE } from "./fx";
 
 let cachedEgpToUsd: { rate: number; fetchedAt: number } | null = null;
 

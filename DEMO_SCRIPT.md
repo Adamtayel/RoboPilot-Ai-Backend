@@ -19,7 +19,7 @@ Click **Fill example** → **Generate plan**. While it loads:
 
 "While this runs: the AI only proposes architecture blocks and candidate
 component names. Every price you're about to see either comes from a live
-scrape of a real store page, or from our own 14+... [18/26]-item verified
+scrape of a real store page, or from our own 26-item verified
 catalog — never from the AI's memory."
 
 When it lands, point at:
