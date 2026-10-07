@@ -114,12 +114,27 @@ compatibility/BOM → produces milestones and project risks.
 - **DeepSeek** (`deepseek-v4-flash`) — reads real, live-fetched store pages
   to extract current prices; regex fallback if unavailable — see
   `AI_USAGE.md`
-- **Vitest** — 62 unit + API tests
+- **React Three Fiber + three.js** — the 3D board in the landing hero, lazy
+  loaded and never requested on mobile or under `prefers-reduced-motion`
+- **Vitest** — 65 unit, API and adversarial tests
 - **Vercel** — deployment target
+
+No CSS framework: the design system is hand-written CSS custom properties in
+`src/app/globals.css`.
+
+## Pages
+
+`src/app/page.tsx` is the landing page: a hero with an interactive 3D dev
+board (`src/components/landing/`), a worked example of a plan, the
+capability sequence, catalog coverage and the API contract. The worked
+example is a **server component that calls the real `tools.ts` functions at
+build time**, so its prices, compatibility verdicts and risk scores are
+produced by the same code that serves the API rather than typed in by hand —
+if a catalog price changes, that section changes with it.
 
 ## Product UI
 
-`src/app/page.tsx` is a client-rendered page with two panels: the intake
+`src/app/app/page.tsx` is a client-rendered page with two panels: the intake
 form on the left (`IntakeForm.tsx`, with an Egypt/International pricing
 region toggle and an animated robot-face logo) and the result panel on the
 right, which switches between four explicit states — idle
@@ -170,7 +185,7 @@ npm run dev
 - [x] Compatibility checker (`check_compatibility`)
 - [x] Risk register (`project_risk`)
 - [x] Milestone plan
-- [x] Project wizard UI (`src/app/page.tsx` + `src/components/robopilot/`)
+- [x] Project wizard UI (`src/app/app/page.tsx` + `src/components/robopilot/`)
 - [x] Troubleshooting knowledge assistant / expanded catalog
 - [x] Public deployment
 
@@ -184,7 +199,7 @@ defense — not to memorize a script, but to genuinely understand it:
 - Read `IntakeForm.tsx` end to end: how form state maps to the API request
   body, and how `switchRegion()` converts the budget number (not just its
   label) when the pricing mode changes.
-- Be able to explain the four view states in `page.tsx` (`idle`/`loading`/
+- Be able to explain the four view states in `app/page.tsx` (`idle`/`loading`/
   `error`/`success`) and why `LoadingState`/`EmptyState` use the same
   `RobotLogo` component in two different animation states instead of two
   separate assets.

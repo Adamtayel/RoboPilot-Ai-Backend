@@ -20,7 +20,12 @@ export function RiskList({ risks }: { risks: Risk[] }) {
           </span>
           <div>
             <p className="risk-item__category">
-              {risk.category.replace("_", " ")} · {risk.likelihood} likelihood · {risk.impact} impact
+              <span className="risk-item__name">{risk.category.replace("_", " ")}</span>
+              <span className="risk-item__levels mono">
+                likelihood {risk.likelihood}
+                <span className="risk-item__levels-sep" aria-hidden="true" />
+                impact {risk.impact}
+              </span>
             </p>
             <p className="risk-item__desc">{risk.description}</p>
             <p className="risk-item__mitigation">{risk.mitigation}</p>
