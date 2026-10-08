@@ -76,7 +76,9 @@ export default function Home() {
             <button
               type="button"
               role="tab"
+              id="tab-chat"
               aria-selected={mode === "chat"}
+              aria-controls="panel-chat"
               className={mode === "chat" ? "intake__tab intake__tab--on" : "intake__tab"}
               onClick={() => setMode("chat")}
             >
@@ -85,7 +87,9 @@ export default function Home() {
             <button
               type="button"
               role="tab"
+              id="tab-form"
               aria-selected={mode === "form"}
+              aria-controls="panel-form"
               className={mode === "form" ? "intake__tab intake__tab--on" : "intake__tab"}
               onClick={() => setMode("form")}
             >
@@ -96,7 +100,7 @@ export default function Home() {
           {/* Both stay mounted: the form holds the answers, and hiding it
               rather than unmounting it is what lets the chat fill it in the
               background and keeps everything typed so far when tabs change. */}
-          <div hidden={mode !== "chat"}>
+          <div role="tabpanel" id="panel-chat" aria-labelledby="tab-chat" hidden={mode !== "chat"}>
             <ChatPanel
               priceRegion={priceRegion}
               onSlotsChange={setSlots}
@@ -108,7 +112,7 @@ export default function Home() {
             />
           </div>
 
-          <div hidden={mode !== "form"}>
+          <div role="tabpanel" id="panel-form" aria-labelledby="tab-form" hidden={mode !== "form"}>
             <IntakeForm
               onSubmit={generatePlan}
               disabled={view.status === "loading"}
