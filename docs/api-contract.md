@@ -1,8 +1,15 @@
 # RoboPilot — API Contract
 
-`POST /api/robopilot` — the only endpoint. Source of truth for these shapes
-is always `src/lib/robopilot/schema.ts`; this document is a human-readable
-mirror of it.
+Two endpoints:
+
+- `POST /api/robopilot` — produces a plan. Shapes in
+  `src/lib/robopilot/schema.ts`.
+- `POST /api/robopilot/chat` — conversational intake that fills the plan
+  request. Shapes in `src/lib/robopilot/chat-schema.ts`. It does **not**
+  produce a plan; it produces the input for one.
+
+Those schema files are the source of truth; this document mirrors them for
+humans.
 
 ## Request
 
@@ -103,3 +110,89 @@ Content-Type: application/json
 Frontend integration guidance: treat `warnings` in `meta` as non-fatal —
 render them (e.g. "2 components could not be matched to the approved
 catalog") without blocking the rest of the plan from displaying.
+
+
+---
+
+# `POST /api/robopilot/chat`
+
+Collects the four things a plan needs — `projectName`, `requirements`,
+`constraints` and a budget — through conversation, then hands them to the
+plan endpoint above. The model powering it is given an output schema with no
+price, compatibility or risk field, for the same reason the plan model is.
+
+## Request
+
+```json
+{
+  "messages": [
+    { "role": "user", "content": "A small rover that avoids obstacles" },
+    { "role": "assistant", "content": "What does it have to do?" },
+    { "role": "user", "content": "Detect obstacles within 30cm and stop" }
+  ],
+  "collected": {
+    "projectName": "Obstacle rover",
+    "requirements": [],
+    "constraints": [],
+    "budgetAmount": null,
+    "budgetCurrency": null,
+    "targetPlatform": "unspecified"
+  },
+  "priceRegion": "egypt"
+}
+```
+
+`messages` must end with a `user` turn, 1–40 entries, each ≤ 2000 chars.
+`collected` is the state returned by the previous turn; omit it on the first
+message. The conversation is stateless on the server — the client carries the
+slots, exactly as it carries the transcript.
+
+## Success response — `200`
+
+```json
+{
+  "reply": "Anything it has to work within — size, power, a deadline?",
+  "collected": { "...": "the full accumulated slot state" },
+  "missing": ["constraints", "budget"],
+  "ready": false,
+  "meta": { "provider_used": "groq", "priceClaimRedacted": false }
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `reply` | The message to show the user. |
+| `collected` | Full slot state after this turn. Slots only ever grow: a value the model omits is carried forward from the previous state, so a forgetful turn cannot erase an answer the user already gave. |
+| `missing` | Which of the four are still outstanding. Computed from the slots by `missingSlots()` — **the model's own `readyToPlan` is discarded**, so an over-eager model cannot push a half-filled brief into the planner. |
+| `ready` | `missing.length === 0`. |
+| `meta.priceClaimRedacted` | `true` when the model's reply contained something shaped like money and was replaced wholesale. See below. |
+
+## The price guard
+
+`redactPriceClaims()` in `chat-service.ts` inspects every reply before it
+leaves the server. If it matches a money-shaped pattern — a currency symbol
+and a figure, a figure and a currency word in English, Arabic or Franco
+transliteration — the entire reply is replaced with a refusal rather than
+patched, because a sentence built around a figure stops making sense once the
+figure is cut out of it.
+
+The system prompt already forbids quoting prices. This exists because a prompt
+is a request, not a guarantee, and "roughly how much will this cost?" is both
+the most natural question a user can ask and the most natural thing for a
+model to answer. Regression tests in `tests/unit/chat-service.test.ts` and
+`tests/api/chat.test.ts` cover it, including a model that insists.
+
+A false positive costs one stiff reply. A false negative costs the one
+property the whole product is built on.
+
+## Error responses
+
+| Status | When | Body shape |
+|---|---|---|
+| `400` | Malformed JSON, fails `ChatRequestSchema`, or no user message | `{ "error": string, "issues"?: [...] }` |
+| `405` | Any method other than `POST` | `{ "error": "Method not allowed. Use POST." }` |
+| `413` | Body exceeds 40,000 bytes | `{ "error": "Conversation is too long." }` |
+| `502` | Both providers failed, or the reply didn't match its schema | `{ "error": string, "code": "PROVIDER_UNAVAILABLE" \| "AI_SCHEMA_MISMATCH" }` |
+
+A `502` here is not fatal to the product: the form is always available and
+the client is expected to say so, which is what `ChatPanel` does.

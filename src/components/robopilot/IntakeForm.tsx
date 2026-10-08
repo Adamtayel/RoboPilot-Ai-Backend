@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { EGP_TO_USD_FALLBACK_RATE } from "@/lib/robopilot/fx";
+import type { CollectedSlots } from "@/lib/robopilot/chat-schema";
 
 export interface PlanRequestBody {
   projectName: string;
@@ -15,6 +16,15 @@ export interface PlanRequestBody {
 interface IntakeFormProps {
   onSubmit: (body: PlanRequestBody) => void;
   disabled: boolean;
+  /**
+   * Slots gathered by the conversational intake. The form stays the single
+   * place these values are edited — the chat writes into it rather than
+   * keeping a parallel copy, so there is never a question of which of the two
+   * the user is actually about to submit.
+   */
+  prefill?: CollectedSlots | null;
+  /** Lets the page tell the chat which currency the user is working in. */
+  onRegionChange?: (region: PlanRequestBody["priceRegion"]) => void;
 }
 
 const EXAMPLE = {
@@ -28,7 +38,12 @@ const EXAMPLE = {
 
 
 
-export function IntakeForm({ onSubmit, disabled }: IntakeFormProps) {
+export function IntakeForm({
+  onSubmit,
+  disabled,
+  prefill = null,
+  onRegionChange,
+}: IntakeFormProps) {
   const [projectName, setProjectName] = useState("");
   const [requirements, setRequirements] = useState<string[]>([""]);
   const [constraints, setConstraints] = useState<string[]>([]);
@@ -52,7 +67,32 @@ export function IntakeForm({ onSubmit, disabled }: IntakeFormProps) {
       setBudgetUsd(String(converted));
     }
     setPriceRegion(nextRegion);
+    onRegionChange?.(nextRegion);
   }
+
+  useEffect(() => {
+    if (!prefill) return;
+
+    if (prefill.projectName) setProjectName(prefill.projectName);
+    if (prefill.requirements.length > 0) setRequirements(prefill.requirements);
+    if (prefill.constraints.length > 0) setConstraints(prefill.constraints);
+    if (prefill.targetPlatform !== "unspecified") setTargetPlatform(prefill.targetPlatform);
+
+    if (prefill.budgetAmount !== null) {
+      // The budget field always holds a number in the region's own currency,
+      // so a budget the user stated in the other one has to be converted on
+      // the way in — the same conversion switchRegion() does, for the same
+      // reason: the label and the number must never disagree.
+      const inEgp = prefill.budgetCurrency === "EGP";
+      const value =
+        isEgypt === inEgp
+          ? prefill.budgetAmount
+          : isEgypt
+            ? Math.round(prefill.budgetAmount / EGP_TO_USD_FALLBACK_RATE)
+            : Math.round(prefill.budgetAmount * EGP_TO_USD_FALLBACK_RATE * 100) / 100;
+      setBudgetUsd(String(value));
+    }
+  }, [prefill, isEgypt]);
 
   function updateListItem(
     list: string[],

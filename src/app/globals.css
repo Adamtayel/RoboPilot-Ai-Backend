@@ -776,6 +776,196 @@ code, .mono {
 .error-text { margin-top: 10px; color: var(--danger); font-size: 13px; }
 
 /* ==========================================================================
+   Planner — conversational intake
+   ========================================================================== */
+
+.intake__tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  padding: 3px;
+  margin-bottom: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--graphite-sunken);
+}
+.intake__tab {
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-faint);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 140ms ease, background 140ms ease;
+}
+.intake__tab:hover { color: var(--ink-dim); }
+.intake__tab--on {
+  background: rgba(61, 225, 200, 0.1);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--signal-dim);
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--graphite-raised);
+  overflow: hidden;
+}
+.chat__head {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.chat__title { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+
+/* The four slots, as a readout the user can watch fill up. This is the whole
+   point of the conversation, so it is visible the entire time rather than
+   revealed at the end. */
+.chat__slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.chat__slot {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--ink-faint);
+}
+.chat__slot-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  transition: background 200ms ease, border-color 200ms ease;
+}
+.chat__slot--done { color: var(--signal); }
+.chat__slot--done .chat__slot-dot {
+  background: var(--signal);
+  border-color: var(--signal);
+  box-shadow: 0 0 6px rgba(61, 225, 200, 0.5);
+}
+
+.chat__stream {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px;
+  min-height: 260px;
+  max-height: 46vh;
+  overflow-y: auto;
+}
+.chat__msg {
+  max-width: 90%;
+  padding: 9px 12px;
+  border-radius: var(--radius);
+  font-size: 13.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+.chat__msg--assistant {
+  align-self: flex-start;
+  background: var(--graphite-sunken);
+  border: 1px solid var(--line);
+  color: var(--ink-dim);
+}
+.chat__msg--user {
+  align-self: flex-end;
+  background: rgba(61, 225, 200, 0.1);
+  border: 1px solid var(--signal-dim);
+  color: var(--ink);
+}
+.chat__msg--thinking {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-faint);
+}
+.chat__dots { display: inline-flex; gap: 3px; }
+.chat__dots i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--signal);
+  animation: chat-dot 1.1s ease-in-out infinite;
+}
+.chat__dots i:nth-child(2) { animation-delay: 0.15s; }
+.chat__dots i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes chat-dot {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
+.chat__error {
+  padding: 9px 12px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(224, 114, 90, 0.4);
+  background: rgba(224, 114, 90, 0.07);
+  color: var(--danger);
+  font-size: 13px;
+}
+
+.chat__ready {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--signal-dim);
+  background: rgba(61, 225, 200, 0.06);
+}
+.chat__ready p { font-size: 13px; color: var(--ink); }
+
+.chat__composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 12px 18px 16px;
+  border-top: 1px solid var(--line);
+}
+.chat__input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--graphite-sunken);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+.chat__input::placeholder { color: var(--ink-faint); }
+.chat__input:focus {
+  outline: none;
+  border-color: var(--signal);
+  box-shadow: 0 0 0 3px rgba(61, 225, 200, 0.12);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ==========================================================================
    Planner — idle / loading / error states
    ========================================================================== */
 

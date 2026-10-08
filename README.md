@@ -116,11 +116,27 @@ compatibility/BOM → produces milestones and project risks.
   `AI_USAGE.md`
 - **React Three Fiber + three.js** — the 3D board in the landing hero, lazy
   loaded and never requested on mobile or under `prefers-reduced-motion`
-- **Vitest** — 65 unit, API and adversarial tests
+- **Vitest** — 98 unit, API and adversarial tests
 - **Vercel** — deployment target
 
 No CSS framework: the design system is hand-written CSS custom properties in
 `src/app/globals.css`.
+
+## Conversational intake
+
+`POST /api/robopilot/chat` lets someone describe a build in their own words
+instead of filling four fields cold. It collects project name, requirements,
+constraints and budget, writes them into the same form, and then hands them
+to the ordinary plan endpoint — it is a second way into the intake, not a
+second product.
+
+The rule the project is built on gets its hardest test here, because a chat
+window invites "so roughly how much will this cost?". Three things answer it:
+the model's output schema has no price field, the system prompt forbids
+quoting one, and `redactPriceClaims()` replaces any reply containing a
+money-shaped figure (English, Arabic or Franco) before it reaches the user.
+The model's own "I have everything I need" is likewise discarded — readiness
+is recomputed from the slots. See `docs/api-contract.md`.
 
 ## Pages
 
