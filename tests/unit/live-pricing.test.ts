@@ -167,3 +167,74 @@ describe("buildCandidateSnippets", () => {
     expect(snippets).toContain("ESP32 Development Board");
   });
 });
+
+/* --------------------------------------------------------------------- */
+/* Electra Store — the markup below is condensed from a real response of  */
+/* https://electra.store/products?q=ESP32 captured on 2026-10-08.         */
+/*                                                                        */
+/* Three separate bugs were found there and each has a case here:         */
+/*  1. the anchor wraps the WHOLE card, so the price sits inside it, not  */
+/*     after it — the old "window after </a>" search found nothing;       */
+/*  2. the product name contains "BLE5", and the old price pattern read   */
+/*     "LE5" out of it and returned 5 EGP;                                */
+/*  3. the old `?search=` parameter was ignored by the site entirely.     */
+/* --------------------------------------------------------------------- */
+
+const ELECTRA_CARD = `
+<a href="https://electra.store/products/esp32-s3-n16r8-devkitc-1-dual-type-c-unassembled-wifi-ble5-development-board" wire:navigate class="block" aria-label="ESP32-S3-N16R8 DevKitC-1 Dual Type C (Unassembled) – WiFi &amp; BLE5 Development Board">
+  <div class="relative"><span class="badge">-4%</span><span class="badge">NEW</span></div>
+  <h3 class="title">ESP32-S3-N16R8 DevKitC-1 Dual Type C (Unassembled) – WiFi &amp; BLE5 Development Board</h3>
+  <p class="text-xs text-gray-500 mb-2">Electra Store</p>
+  <div class="flex items-center gap-2">
+    <span class="text-lg font-bold text-red-600">625.00 EGP</span>
+    <span class="text-sm line-through text-gray-400">650.00 EGP</span>
+  </div>
+</a>`;
+
+describe("extractBestMatch — Electra Store (whole-card anchor)", () => {
+  it("finds a price that sits INSIDE the product anchor, not after it", () => {
+    const result = extractBestMatch(ELECTRA_CARD, "https://electra.store/", "EGP");
+    expect(result).not.toBeNull();
+    expect(result?.price).toBe(625);
+  });
+
+  it("does not read a price out of the product name's 'BLE5'", () => {
+    const result = extractBestMatch(ELECTRA_CARD, "https://electra.store/", "EGP");
+    // The bug produced 5 (from "BLE5"); the real price is 625.
+    expect(result?.price).not.toBe(5);
+  });
+
+  it("uses the accessible name rather than the whole card's text as the product name", () => {
+    const result = extractBestMatch(ELECTRA_CARD, "https://electra.store/", "EGP");
+    expect(result?.name).toBe(
+      "ESP32-S3-N16R8 DevKitC-1 Dual Type C (Unassembled) – WiFi & BLE5 Development Board"
+    );
+  });
+
+  it("resolves the listing URL", () => {
+    const result = extractBestMatch(ELECTRA_CARD, "https://electra.store/", "EGP");
+    expect(result?.url).toContain("electra.store/products/esp32-s3-n16r8");
+  });
+});
+
+describe("buildCandidateSnippets — size", () => {
+  it("condenses a large product card to visible text instead of shipping its markup", () => {
+    const bloated = ELECTRA_CARD.replace(
+      "<div class=\"relative\">",
+      `<svg viewBox="0 0 24 24">${"<path d='M4.318 6.318'/>".repeat(200)}</svg><div class="relative">`
+    );
+    const snippet = buildCandidateSnippets(bloated);
+
+    expect(snippet).toContain("625.00 EGP");
+    expect(snippet).not.toContain("<svg");
+    expect(snippet).not.toContain("wire:navigate");
+    // The raw card is several KB; what we pay DeepSeek for must not be.
+    expect(snippet.length).toBeLessThan(700);
+  });
+
+  it("keeps the listing href so the extracted price can be linked to its source", () => {
+    expect(buildCandidateSnippets(ELECTRA_CARD)).toContain(
+      "https://electra.store/products/esp32-s3-n16r8"
+    );
+  });
+});

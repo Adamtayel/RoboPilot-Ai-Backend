@@ -240,9 +240,15 @@ Most notably:
 - The catalog focuses on ground robotics; drone-specific parts (barometric
   sensors, coreless propulsion motors) are a known, disclosed gap rather
   than guessed.
-- Electra Store's live search URL, and a handful of ⚠️-flagged datasheet
-  links in `docs/source-register.md`, were added under time pressure and
-  are best-effort rather than independently re-verified this session.
+- Electra Store's search URL was verified against the live site on
+  2026-10-08 and fixed: the old `?search=` parameter was silently ignored
+  by the site, which returned its full unfiltered catalog for any query —
+  including nonsense — so the extractor could have read a price off an
+  unrelated product. It now uses `?q=`, which returns zero product links
+  for a nonsense query. Regression tests cover the real markup.
+- A handful of ⚠️-flagged datasheet links in `docs/source-register.md`
+  were added under time pressure and are best-effort rather than
+  independently re-verified.
 
 ## License / academic context
 
