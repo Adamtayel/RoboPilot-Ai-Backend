@@ -91,9 +91,28 @@ export function ArchitectureDiagram({
     >();
     let tallest = 0;
 
+    // Open ports and parallel edge labels both stack upward above a block,
+    // so the top padding has to clear the deepest stack on the diagram rather
+    // than assume one row.
+    const deepestPortStack = Math.max(
+      1,
+      ...model.blocks.flatMap((b) =>
+        (["in", "out"] as const).map(
+          (dir) => model.openPorts.filter((p) => p.block === b.block.name && p.direction === dir).length
+        )
+      )
+    );
+    const deepestEdgeStack = Math.max(
+      1,
+      ...model.blocks.map(
+        (b) => model.edges.filter((e) => e.from === b.block.name).length
+      )
+    );
+    const headroom = 18 + Math.max(deepestPortStack, deepestEdgeStack) * 12;
+
     for (const [layer, list] of [...columns.entries()].sort((a, b) => a[0] - b[0])) {
       const x = PAD + layer * (BLOCK_W + COL_GAP);
-      let y = PAD + 30; // room for open-port markers and stacked edge labels
+      let y = PAD + headroom;
       for (const entry of list) {
         const chipsH = entry.components.length * (CHIP_H + CHIP_GAP);
         const h = BLOCK_H + (chipsH > 0 ? chipsH + 8 : 0);
@@ -321,7 +340,7 @@ export function ArchitectureDiagram({
                   fontFamily={FONT_MONO}
                   fontSize={9.5}
                 >
-                  {truncate(edge.label, 18)}
+                  {truncate(edge.label, 14)}
                 </text>
               </g>
             );
@@ -367,8 +386,16 @@ export function ArchitectureDiagram({
             const pos = layout.positioned.get(port.block);
             if (!pos) return null;
             const isIn = port.direction === "in";
+            // A block commonly has several open ports on the same side — a
+            // power block alone had "5V rail for ESP…" and "Motor voltage r…"
+            // landing on identical coordinates and rendering as one smear.
+            // Each side stacks upward from the block's top edge.
+            const sameSide = model.openPorts.filter(
+              (p) => p.block === port.block && p.direction === port.direction
+            );
+            const rank = sameSide.indexOf(port);
             const x = isIn ? pos.x : pos.x + BLOCK_W;
-            const y = pos.y - 9;
+            const y = pos.y - 9 - rank * 12;
             return (
               <g key={`port-${i}`} opacity={0.85}>
                 <title>
@@ -385,7 +412,7 @@ export function ArchitectureDiagram({
                   fontFamily={FONT_MONO}
                   fontSize={9}
                 >
-                  {truncate(port.port, 16)}
+                  {truncate(port.port, 13)}
                 </text>
               </g>
             );
