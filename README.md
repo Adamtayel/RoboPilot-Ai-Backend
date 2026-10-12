@@ -116,11 +116,28 @@ compatibility/BOM → produces milestones and project risks.
   `AI_USAGE.md`
 - **React Three Fiber + three.js** — the 3D board in the landing hero, lazy
   loaded and never requested on mobile or under `prefers-reduced-motion`
-- **Vitest** — 98 unit, API and adversarial tests
+- **Vitest** — 126 unit, API and adversarial tests
 - **Vercel** — deployment target
 
 No CSS framework: the design system is hand-written CSS custom properties in
 `src/app/globals.css`.
+
+## Architecture diagram
+
+The plan is also drawn, as an SVG the user can download for a report or a
+slide. The drawing is derived, not arranged: an edge appears only where one
+block's output name actually matches another block's input, a component sits
+under a block only on a word both share, and a part that matched nothing goes
+into a visible "not placed" lane rather than somewhere plausible. Ties are
+marked as ties.
+
+This replaced a view that drew an arrow between every pair of adjacent blocks
+whether or not anything connected them — a claim nothing had checked, in a
+tool whose premise is that displayed claims are traceable. A diagram with an
+honest loose end is worth more than a tidy one that guessed, because the loose
+end is the thing the builder still has to decide. Logic is in
+`src/lib/robopilot/diagram.ts` (pure, 28 tests); rendering in
+`ArchitectureDiagram.tsx`.
 
 ## Conversational intake
 

@@ -1,5 +1,6 @@
 import type { RoboPilotPlan } from "@/lib/robopilot/schema";
 import { ArchitectureFlow } from "./ArchitectureFlow";
+import { ArchitectureDiagram } from "./ArchitectureDiagram";
 import { BomTable } from "./BomTable";
 import { CompatibilityList } from "./CompatibilityList";
 import { MilestoneTimeline } from "./MilestoneTimeline";
@@ -32,7 +33,19 @@ export function PlanResults({ plan }: { plan: RoboPilotPlan }) {
           <h2 className="section__title">Architecture</h2>
           <span className="section__meta">{plan.architecture_blocks.length} blocks</span>
         </div>
-        <ArchitectureFlow blocks={plan.architecture_blocks} />
+        <ArchitectureDiagram
+          blocks={plan.architecture_blocks}
+          components={plan.components}
+          checks={plan.compatibility_checks}
+        />
+        {/* The block cards stay below the drawing. They carry the full
+            purpose and port lists, which the diagram truncates to stay
+            readable, and they are what someone reading without the picture
+            gets. */}
+        <details className="diagram__detail">
+          <summary>Block details</summary>
+          <ArchitectureFlow blocks={plan.architecture_blocks} />
+        </details>
       </div>
 
       <div className="section">
